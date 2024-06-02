@@ -285,7 +285,7 @@ module "vpc_endpoints" {
     s3 = {
       service = "s3"
       tags = merge(
-        { Name = "s3-vpc-endpoint" },
+        { Name = "s3-vpc-endpoint-${local.system_name}" },
         local.all_tags
       )
     }
