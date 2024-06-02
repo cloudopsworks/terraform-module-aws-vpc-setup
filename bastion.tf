@@ -3,12 +3,6 @@
 #            On GitHub: https://github.com/cloudopsworks
 #            Distributed Under Apache v2.0 License
 #
-locals {
-  region_arr  = split("-", data.aws_region.current.name)
-  region      = format("%s%s%s", lower(local.region_arr[1]), lower(substr(local.region_arr[2], 0, 2)), lower(local.region_arr[3]))
-  system_name = format("%s-%s-%s-%s", lower(var.tags.organization_unit), lower(var.tags.environment_type), lower(var.tags.environment_name), local.region)
-}
-
 resource "tls_private_key" "keypair_gen_bastion" {
   count = var.create_bastion ? 1 : 0
 
