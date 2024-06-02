@@ -55,7 +55,7 @@ data "cloudinit_config" "prometheus_server_cloudinit" {
 
   part {
     content_type = "text/x-shellscript"
-    content = templatefile("files/userdata_server_dockeronly", {
+    content = templatefile("${path.module}/files/userdata_server_dockeronly", {
       docker_version_server = var.docker_version_server
     })
   }
@@ -66,7 +66,7 @@ resource "aws_instance" "bastion_server" {
 
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.bastion_size
-  key_name               = aws_key_pair.bastion_key[[count.index]].key_name
+  key_name               = aws_key_pair.bastion_key[count.index].key_name
   vpc_security_group_ids = [aws_security_group.ssh_admin.id, aws_security_group.bastion.id]
   user_data              = data.cloudinit_config.prometheus_server_cloudinit.rendered
   subnet_id              = module.vpc.public_subnets[0]
