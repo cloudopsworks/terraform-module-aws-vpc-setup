@@ -1,0 +1,34 @@
+#!/bin/bash -x
+export curlimage=appropriate/curl
+export jqimage=stedolan/jq
+
+apt update
+
+if [ `command -v curl` ]; then
+  curl -sL https://releases.rancher.com/install-docker/${docker_version_server}.sh | sh
+elif [ `command -v wget` ]; then
+  wget -qO- https://releases.rancher.com/install-docker/${docker_version_server}.sh | sh
+fi
+
+systemctl enable docker.service
+systemctl start docker.service
+
+usermod -a -G docker ubuntu
+
+snap install aws-cli --classic
+snap install kubectl --classic
+snap install helm --classic
+
+apt install -y unzip postgresql-client postgresql-client-common
+
+curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.13.7/2019-06-11/bin/linux/amd64/aws-iam-authenticator
+chmod +x /tmp/aws-iam-authenticator
+cp /tmp/aws-iam-authenticator /usr/local/bin/
+
+curl -o /tmp/terraform_0.12.6_linux_amd64.zip https://releases.hashicorp.com/terraform/0.12.6/terraform_0.12.6_linux_amd64.zip
+
+unzip -d /tmp /tmp/terraform_0.12.6_linux_amd64.zip
+
+chmod +x /tmp/terraform
+
+cp /tmp/terraform /usr/local/bin
