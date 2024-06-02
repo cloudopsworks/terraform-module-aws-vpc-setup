@@ -11,7 +11,7 @@ resource "aws_security_group" "ssh_admin" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = merge(module.tags.locals.common_tags, tomap({
+  tags = merge(local.all_tags, tomap({
     "Name" = "sshadmin-sg-${local.system_name}"
   }))
 }

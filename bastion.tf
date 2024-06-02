@@ -85,12 +85,12 @@ resource "aws_instance" "bastion_server" {
     ]
   }
 
-  tags = merge(module.tags.locals.common_tags, {
+  tags = merge(local.all_tags, {
     Name = "bastion-vm-${local.system_name}"
     Role = "Bastion"
   })
 
-  volume_tags = merge(module.tags.locals.common_tags, {
+  volume_tags = merge(local.all_tags, {
     Name = "bastion-vm-${local.system_name}"
     Role = "Bastion"
   })

@@ -11,7 +11,7 @@ resource "aws_security_group" "bastion" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = merge(module.tags.locals.common_tags, tomap({
+  tags = merge(local.all_tags, tomap({
     "Name" = "bastion-vm-sg-${local.system_name}"
   }))
 }

@@ -78,3 +78,7 @@ variable "docker_version_server" {
   default = "18.09"
 }
 
+variable "extra_tags" {
+  type    = map(string)
+  default = {}
+}

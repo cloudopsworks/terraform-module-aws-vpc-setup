@@ -11,7 +11,7 @@ resource "aws_security_group" "endpoints" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = merge(module.tags.locals.common_tags, tomap({
+  tags = merge(local.all_tags, tomap({
     "Name" = "vpc-endpoints-sg-${local.system_name}"
   }))
 }

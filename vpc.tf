@@ -270,7 +270,7 @@ module "vpc" {
   map_public_ip_on_launch              = true
   enable_network_address_usage_metrics = true
 
-  tags = module.tags.locals.common_tags
+  tags = local.all_tags
 }
 
 module "vpc_endpoints" {
@@ -286,7 +286,7 @@ module "vpc_endpoints" {
       service = "s3"
       tags = merge(
         { Name = "s3-vpc-endpoint" },
-        module.tags.locals.common_tags
+        local.all_tags
       )
     }
   }
