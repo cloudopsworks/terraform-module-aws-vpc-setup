@@ -6,7 +6,6 @@
 variable "transit_gateway" {
   type = object({
     enabled = bool
-    is_hub  = bool
     routes  = list(map(any))
   })
 }

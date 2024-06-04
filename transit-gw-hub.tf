@@ -4,7 +4,7 @@
 #            Distributed Under Apache v2.0 License
 #
 locals {
-  hubs = var.transit_gateway.enabled && var.transit_gateway.is_hub ? {
+  hubs = var.transit_gateway.enabled && var.is_hub ? {
     hub000 = {
       vpc_id                                          = module.vpc.vpc_id
       subnet_ids                                      = module.vpc.private_subnets
@@ -18,14 +18,14 @@ locals {
   vpcs   = merge(local.hubs, local.spokes)
 }
 
-module "transit-gateway" {
+module "transit_gateway" {
   count           = var.transit_gateway.enabled ? 1 : 0
   source          = "terraform-aws-modules/transit-gateway/aws"
   version         = "~> 2.10"
-  name            = "transit-gw-${local.system_name}"
+  name            = "tgw-${local.system_name}"
   description     = "Transit Gateway for Hub ${var.spoke_def}"
-  create_tgw      = var.transit_gateway.is_hub
-  share_tgw       = !var.transit_gateway.is_hub
+  create_tgw      = var.is_hub
+  share_tgw       = !var.is_hub
   vpc_attachments = local.vpcs
   tags            = var.extra_tags
 }
