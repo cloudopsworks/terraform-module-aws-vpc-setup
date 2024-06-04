@@ -10,7 +10,7 @@ locals {
 resource "aws_flow_log" "flow_logs" {
   iam_role_arn    = aws_iam_role.vpc_logs.arn
   log_destination = aws_cloudwatch_log_group.log_group.arn
-  traffic_type    = "ALL"
+  traffic_type    = var.flow_logs_type
   vpc_id          = module.vpc.vpc_id
 }
 

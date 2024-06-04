@@ -18,11 +18,11 @@ resource "aws_cloudwatch_log_group" "tgw_log_group" {
 
 # TGW Attachment
 resource "aws_flow_log" "tgw_att_flow_logs" {
-  count                         = var.transit_gateway.enabled ? 1 : 0
+  count                         = var.transit_gateway.enabled ? 1 : length(module.transit_gateway[0].ec2_transit_gateway_vpc_attachment_ids)
   iam_role_arn                  = aws_iam_role.vpc_logs.arn
   log_destination               = aws_cloudwatch_log_group.tgw_att_log_group[0].arn
   traffic_type                  = var.flow_logs_type
-  transit_gateway_attachment_id = module.transit_gateway[0].ec2_transit_gateway_vpc_attachment.id
+  transit_gateway_attachment_id = module.transit_gateway[0].ec2_transit_gateway_vpc_attachment_ids[count.index]
 }
 
 resource "aws_cloudwatch_log_group" "tgw_att_log_group" {
