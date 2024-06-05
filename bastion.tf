@@ -24,11 +24,6 @@ resource "aws_key_pair" "bastion_key" {
   public_key = tls_private_key.keypair_gen_bastion[count.index].public_key_openssh
 }
 
-
-output "bastion_key" {
-  value = tls_private_key.keypair_gen_bastion.*.public_key_openssh
-}
-
 data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"] # Canonical
@@ -96,8 +91,6 @@ resource "aws_instance" "bastion_server" {
   })
 }
 
-
-
 resource "aws_iam_role" "bastion" {
   name               = "bastion-vm-role-${local.system_name}"
   assume_role_policy = <<POLICY
@@ -126,14 +119,4 @@ resource "aws_iam_instance_profile" "bastion" {
 resource "aws_iam_role_policy_attachment" "bastion_admin" {
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
   role       = aws_iam_role.bastion.name
-}
-
-
-
-output "bastion_public_address" {
-  value = aws_instance.bastion_server.*.public_dns
-}
-
-output "bastion_public_ip" {
-  value = aws_instance.bastion_server.*.public_ip
 }
