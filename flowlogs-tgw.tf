@@ -12,7 +12,7 @@ resource "aws_flow_log" "tgw_flow_logs" {
   transit_gateway_id       = module.transit_gateway[0].ec2_transit_gateway_id
 
   tags = merge(
-    var.extra_tags,
+    local.all_tags,
     {
       Name = "flowlogs-tgw-${local.system_name}"
     }
@@ -34,7 +34,7 @@ resource "aws_flow_log" "tgw_att_flow_logs" {
   transit_gateway_attachment_id = module.transit_gateway[0].ec2_transit_gateway_vpc_attachment_ids[count.index]
 
   tags = merge(
-    var.extra_tags,
+    local.all_tags,
     {
       Name = "flowlogs-tgw-att-${local.system_name}"
     }

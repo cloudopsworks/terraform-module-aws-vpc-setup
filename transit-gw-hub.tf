@@ -27,5 +27,5 @@ module "transit_gateway" {
   create_tgw      = var.is_hub
   share_tgw       = !var.is_hub
   vpc_attachments = local.vpcs
-  tags            = var.extra_tags
+  tags            = local.all_tags
 }

@@ -14,7 +14,7 @@ resource "aws_flow_log" "flow_logs" {
   vpc_id          = module.vpc.vpc_id
 
   tags = merge(
-    var.extra_tags,
+    local.all_tags,
     {
       Name = "flowlogs-vpc-${local.system_name}"
     }
