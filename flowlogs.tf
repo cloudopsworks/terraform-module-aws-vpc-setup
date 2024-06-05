@@ -12,6 +12,13 @@ resource "aws_flow_log" "flow_logs" {
   log_destination = aws_cloudwatch_log_group.log_group.arn
   traffic_type    = var.flow_logs_type
   vpc_id          = module.vpc.vpc_id
+
+  tags = merge(
+    var.extra_tags,
+    {
+      Name = "flowlogs-vpc-${local.system_name}"
+    }
+  )
 }
 
 resource "aws_cloudwatch_log_group" "log_group" {

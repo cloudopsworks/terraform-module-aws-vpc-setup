@@ -10,6 +10,13 @@ resource "aws_flow_log" "tgw_flow_logs" {
   max_aggregation_interval = 60
   traffic_type             = var.flow_logs_type
   transit_gateway_id       = module.transit_gateway[0].ec2_transit_gateway_id
+
+  tags = merge(
+    var.extra_tags,
+    {
+      Name = "flowlogs-tgw-${local.system_name}"
+    }
+  )
 }
 
 resource "aws_cloudwatch_log_group" "tgw_log_group" {
@@ -25,6 +32,13 @@ resource "aws_flow_log" "tgw_att_flow_logs" {
   traffic_type                  = var.flow_logs_type
   max_aggregation_interval      = 60
   transit_gateway_attachment_id = module.transit_gateway[0].ec2_transit_gateway_vpc_attachment_ids[count.index]
+
+  tags = merge(
+    var.extra_tags,
+    {
+      Name = "flowlogs-tgw-att-${local.system_name}"
+    }
+  )
 }
 
 resource "aws_cloudwatch_log_group" "tgw_att_log_group" {
