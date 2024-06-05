@@ -96,3 +96,13 @@ variable "flow_logs_type" {
     error_message = "Invalid value for flow_logs_type. Must be one of ACCEPT, REJECT, or ALL"
   }
 }
+
+variable "single_nat_gateway" {
+  type    = bool
+  default = true
+}
+
+variable "enable_nat_gateway" {
+  type    = bool
+  default = true
+}

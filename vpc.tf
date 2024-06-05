@@ -256,8 +256,8 @@ module "vpc" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  enable_nat_gateway = true
-  single_nat_gateway = true
+  enable_nat_gateway = (length(var.public_subnets) && var.enable_nat_gateway > 0)
+  single_nat_gateway = var.single_nat_gateway
 
   create_database_subnet_group           = true
   create_database_subnet_route_table     = true
