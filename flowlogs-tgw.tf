@@ -5,7 +5,7 @@
 #
 resource "aws_flow_log" "tgw_flow_logs" {
   provider                 = aws.default
-  count                    = var.transit_gateway.enabled ? 1 : 0
+  count                    = var.transit_gateway.enabled && var.is_hub ? 1 : 0
   iam_role_arn             = aws_iam_role.vpc_logs.arn
   log_destination          = aws_cloudwatch_log_group.tgw_log_group[0].arn
   max_aggregation_interval = 60
@@ -22,7 +22,7 @@ resource "aws_flow_log" "tgw_flow_logs" {
 
 resource "aws_cloudwatch_log_group" "tgw_log_group" {
   provider = aws.default
-  count    = var.transit_gateway.enabled ? 1 : 0
+  count    = var.transit_gateway.enabled && var.is_hub ? 1 : 0
   name     = "network/${local.flowlogs_prefix}/${var.spoke_def}/tgw-${local.system_name}"
 }
 
