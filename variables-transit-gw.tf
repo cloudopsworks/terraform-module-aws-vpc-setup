@@ -10,7 +10,21 @@ variable "transit_gateway" {
   })
 }
 
-variable "transit_gateway_ram_share_id" {
-  type    = string
-  default = null
+variable "shared_transit_gateway" {
+  type = object({
+    vpc_id              = string
+    transit_gateway_id  = string
+    ram_share_id        = string
+    private_subnets     = list(string)
+    vpc_route_table_ids = list(string)
+    destination_cidr    = string
+  })
+  default = {
+    vpc_id              = null
+    transit_gateway_id  = null
+    ram_share_id        = null
+    private_subnets     = []
+    vpc_route_table_ids = []
+    destination_cidr    = null
+  }
 }

@@ -33,3 +33,7 @@ output "nat_address" {
 output "vpn_accesses" {
   value = var.vpn_accesses
 }
+
+output "private_route_table_ids" {
+  value = module.vpc.private_route_table_ids
+}

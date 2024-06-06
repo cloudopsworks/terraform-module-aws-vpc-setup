@@ -15,12 +15,15 @@ locals {
     }
   } : {}
   spokes = var.transit_gateway.enabled && !var.is_hub ? {
-    spoke = {
-      vpc_id                                          = module.vpc.vpc_id
-      subnet_ids                                      = module.vpc.private_subnets
+    hub000 = {
+      tgw_id                                          = var.shared_transit_gateway.transit_gateway_id
+      vpc_id                                          = var.shared_transit_gateway.vpc_id
+      subnet_ids                                      = var.shared_transit_gateway.private_subnets
       dns_support                                     = true
       transit_gateway_default_route_table_association = false
       transit_gateway_default_route_table_propagation = false
+      tgw_destination_cidr                            = var.shared_transit_gateway.destination_cidr
+      vpc_route_table_ids                             = var.shared_transit_gateway.vpc_route_table_ids
       tgw_routes                                      = var.transit_gateway.routes
     }
   } : {}
@@ -39,6 +42,6 @@ module "transit_gateway" {
   ram_allow_external_principals         = try(var.transit_gateway.ram.allow_external_principals, false)
   ram_principals                        = try(var.transit_gateway.ram.principals, [])
   enable_auto_accept_shared_attachments = try(var.transit_gateway.enable_auto_accept, false)
-  ram_resource_share_arn                = var.transit_gateway_ram_share_id
+  ram_resource_share_arn                = var.shared_transit_gateway.ram_share_id
   tags                                  = var.extra_tags
 }
