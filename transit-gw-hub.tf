@@ -46,5 +46,5 @@ module "transit_gateway" {
   ram_principals                        = var.transit_gateway.ram.principals
   enable_auto_accept_shared_attachments = var.transit_gateway.enable_auto_accept
   ram_resource_share_arn                = var.shared_transit_gateway.ram_share_id
-  tags                                  = var.extra_tags
+  tags                                  = local.all_tags
 }
