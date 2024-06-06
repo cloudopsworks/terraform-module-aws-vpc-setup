@@ -7,7 +7,7 @@ locals {
   hubs = var.transit_gateway.enabled && var.is_hub ? {
     hub000 = {
       vpc_id                                          = module.vpc.vpc_id
-      subnet_ids                                      = module.vpc.private_subnets
+      subnet_ids                                      = coalescelist(module.vpc.private_subnets, module.vpc.database_subnets)
       dns_support                                     = true
       transit_gateway_default_route_table_association = false
       transit_gateway_default_route_table_propagation = false
@@ -29,7 +29,7 @@ locals {
     "spoke${var.spoke_def}" = {
       tgw_id                                          = var.shared_transit_gateway.transit_gateway_id
       vpc_id                                          = module.vpc.vpc_id
-      subnet_ids                                      = module.vpc.private_subnets
+      subnet_ids                                      = coalescelist(module.vpc.private_subnets, module.vpc.database_subnets)
       dns_support                                     = true
       transit_gateway_default_route_table_association = false
       transit_gateway_default_route_table_propagation = false
