@@ -5,8 +5,13 @@
 #
 variable "transit_gateway" {
   type = object({
-    enabled = bool
-    routes  = list(map(any))
+    enabled            = bool,
+    routes             = list(map(any))
+    enable_auto_accept = optional(bool, false)
+    ram = optional(object({
+      allow_external_principals = optional(bool, false)
+      principals                = optional(list(string), [])
+    }))
   })
 }
 
