@@ -39,6 +39,6 @@ module "transit_gateway" {
   ram_allow_external_principals         = tr(var.transit_gateway.ram.allow_external_principals, false)
   ram_principals                        = tr(var.transit_gateway.ram.principals, [])
   enable_auto_accept_shared_attachments = tr(var.transit_gateway.enable_auto_accept, false)
-  ram_resource_share_arn = try(var.transit_gateway.ram_share_id, null)
-  tags                   = var.extra_tags
+  ram_resource_share_arn                = try(var.transit_gateway.ram_share_id, null)
+  tags                                  = var.extra_tags
 }
