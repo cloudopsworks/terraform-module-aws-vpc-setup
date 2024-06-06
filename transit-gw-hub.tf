@@ -36,9 +36,9 @@ module "transit_gateway" {
   create_tgw                            = var.is_hub
   share_tgw                             = !var.is_hub
   vpc_attachments                       = local.vpcs
-  ram_allow_external_principals         = tr(var.transit_gateway.ram.allow_external_principals, false)
-  ram_principals                        = tr(var.transit_gateway.ram.principals, [])
-  enable_auto_accept_shared_attachments = tr(var.transit_gateway.enable_auto_accept, false)
-  ram_resource_share_arn                = try(var.transit_gateway.ram_share_id, null)
+  ram_allow_external_principals         = try(var.transit_gateway.ram.allow_external_principals, false)
+  ram_principals                        = try(var.transit_gateway.ram.principals, [])
+  enable_auto_accept_shared_attachments = try(var.transit_gateway.enable_auto_accept, false)
+  ram_resource_share_arn                = var.transit_gateway_ram_share_id
   tags                                  = var.extra_tags
 }
