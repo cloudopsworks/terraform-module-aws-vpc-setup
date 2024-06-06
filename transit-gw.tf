@@ -34,7 +34,7 @@ locals {
       transit_gateway_default_route_table_association = false
       transit_gateway_default_route_table_propagation = false
       tgw_destination_cidr                            = var.shared_transit_gateway.destination_cidr
-      vpc_route_table_ids                             = var.shared_transit_gateway.vpc_route_table_ids
+      vpc_route_table_ids                             = module.vpc.private_route_table_ids
       tgw_routes                                      = var.transit_gateway.routes
     }
   } : {}
