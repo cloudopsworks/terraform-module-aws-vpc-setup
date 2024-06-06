@@ -32,7 +32,7 @@ locals {
 
 module "transit_gateway" {
   providers = {
-    aws = aws.account
+    aws = aws.default
   }
   count                                 = var.transit_gateway.enabled ? 1 : 0
   source                                = "terraform-aws-modules/transit-gateway/aws"
