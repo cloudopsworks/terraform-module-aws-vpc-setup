@@ -19,7 +19,7 @@ locals {
     route_ids       = null
     route_table_ids = null
     vpc_attachments = null
-
+    ram_share_id    = null
   })
 }
 
