@@ -40,7 +40,7 @@ module "transit_gateway" {
   name                                  = "tgw-${local.system_name}"
   description                           = "Transit Gateway for Hub ${var.spoke_def}"
   create_tgw                            = var.is_hub
-  share_tgw                             = !var.is_hub
+  share_tgw                             = true # defaults always to share the TGW
   vpc_attachments                       = local.vpcs
   ram_allow_external_principals         = var.transit_gateway.ram.allow_external_principals
   ram_principals                        = var.transit_gateway.ram.principals
