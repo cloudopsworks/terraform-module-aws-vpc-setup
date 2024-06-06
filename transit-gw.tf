@@ -15,10 +15,21 @@ locals {
     }
   } : {}
   spokes = var.transit_gateway.enabled && !var.is_hub ? {
-    hub000 = {
+#     hub000 = {
+#       tgw_id                                          = var.shared_transit_gateway.transit_gateway_id
+#       vpc_id                                          = var.shared_transit_gateway.vpc_id
+#       subnet_ids                                      = var.shared_transit_gateway.private_subnets
+#       dns_support                                     = true
+#       transit_gateway_default_route_table_association = false
+#       transit_gateway_default_route_table_propagation = false
+#       tgw_destination_cidr                            = var.shared_transit_gateway.destination_cidr
+#       vpc_route_table_ids                             = var.shared_transit_gateway.vpc_route_table_ids
+#       tgw_routes                                      = var.transit_gateway.routes
+#     }
+    "spoke${var.spoke_def}" = {
       tgw_id                                          = var.shared_transit_gateway.transit_gateway_id
-      vpc_id                                          = var.shared_transit_gateway.vpc_id
-      subnet_ids                                      = var.shared_transit_gateway.private_subnets
+      vpc_id                                          = module.vpc.vpc_id
+      subnet_ids                                      = module.vpc.private_subnets
       dns_support                                     = true
       transit_gateway_default_route_table_association = false
       transit_gateway_default_route_table_propagation = false
