@@ -4,6 +4,7 @@
 #            Distributed Under Apache v2.0 License
 #
 resource "aws_flow_log" "tgw_flow_logs" {
+  provider                 = aws.default
   count                    = var.transit_gateway.enabled ? 1 : 0
   iam_role_arn             = aws_iam_role.vpc_logs.arn
   log_destination          = aws_cloudwatch_log_group.tgw_log_group[0].arn
@@ -20,12 +21,14 @@ resource "aws_flow_log" "tgw_flow_logs" {
 }
 
 resource "aws_cloudwatch_log_group" "tgw_log_group" {
-  count = var.transit_gateway.enabled ? 1 : 0
-  name  = "network/${local.flowlogs_prefix}/${var.spoke_def}/tgw-${local.system_name}"
+  provider = aws.default
+  count    = var.transit_gateway.enabled ? 1 : 0
+  name     = "network/${local.flowlogs_prefix}/${var.spoke_def}/tgw-${local.system_name}"
 }
 
 # TGW Attachment
 resource "aws_flow_log" "tgw_att_flow_logs" {
+  provider                      = aws.default
   count                         = var.transit_gateway.enabled ? 1 : length(module.transit_gateway[0].ec2_transit_gateway_vpc_attachment_ids)
   iam_role_arn                  = aws_iam_role.vpc_logs.arn
   log_destination               = aws_cloudwatch_log_group.tgw_att_log_group[0].arn
@@ -42,6 +45,7 @@ resource "aws_flow_log" "tgw_att_flow_logs" {
 }
 
 resource "aws_cloudwatch_log_group" "tgw_att_log_group" {
-  count = var.transit_gateway.enabled ? 1 : 0
-  name  = "network/${local.flowlogs_prefix}/${var.spoke_def}/tgw-att-${local.system_name}"
+  provider = aws.default
+  count    = var.transit_gateway.enabled ? 1 : 0
+  name     = "network/${local.flowlogs_prefix}/${var.spoke_def}/tgw-att-${local.system_name}"
 }

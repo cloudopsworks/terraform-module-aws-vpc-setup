@@ -31,6 +31,9 @@ locals {
 }
 
 module "transit_gateway" {
+  providers = {
+    aws = aws.account
+  }
   count                                 = var.transit_gateway.enabled ? 1 : 0
   source                                = "terraform-aws-modules/transit-gateway/aws"
   version                               = "~> 2.10"

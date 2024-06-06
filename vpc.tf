@@ -4,6 +4,9 @@
 #            Distributed Under Apache v2.0 License
 #
 module "vpc" {
+  providers = {
+    aws = aws.default
+  }
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
 

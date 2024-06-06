@@ -18,13 +18,15 @@ resource "local_file" "keypair_priv_bastion" {
 }
 
 resource "aws_key_pair" "bastion_key" {
-  count = var.create_bastion ? 1 : 0
+  provider = aws.default
+  count    = var.create_bastion ? 1 : 0
 
   key_name   = "key/bastion-${local.system_name}"
   public_key = tls_private_key.keypair_gen_bastion[count.index].public_key_openssh
 }
 
 data "aws_ami" "ubuntu" {
+  provider    = aws.default
   most_recent = true
   owners      = ["099720109477"] # Canonical
 
@@ -57,7 +59,8 @@ data "cloudinit_config" "prometheus_server_cloudinit" {
 }
 
 resource "aws_instance" "bastion_server" {
-  count = var.create_bastion ? 1 : 0
+  provider = aws.default
+  count    = var.create_bastion ? 1 : 0
 
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.bastion_size
@@ -92,6 +95,7 @@ resource "aws_instance" "bastion_server" {
 }
 
 resource "aws_iam_role" "bastion" {
+  provider           = aws.default
   name               = "bastion-vm-role-${local.system_name}"
   assume_role_policy = <<POLICY
 {
@@ -111,12 +115,14 @@ POLICY
 }
 
 resource "aws_iam_instance_profile" "bastion" {
-  name = "bastion-vm-role-${local.system_name}"
-  role = aws_iam_role.bastion.name
+  provider = aws.default
+  name     = "bastion-vm-role-${local.system_name}"
+  role     = aws_iam_role.bastion.name
 
 }
 
 resource "aws_iam_role_policy_attachment" "bastion_admin" {
+  provider   = aws.default
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
   role       = aws_iam_role.bastion.name
 }
