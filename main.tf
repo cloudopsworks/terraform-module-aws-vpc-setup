@@ -293,4 +293,5 @@ module "vpc_endpoints" {
       )
     }
   }
+  tags = local.all_tags
 }
