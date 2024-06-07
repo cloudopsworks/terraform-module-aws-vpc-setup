@@ -42,3 +42,11 @@ output "vpn_accesses" {
 output "private_route_table_ids" {
   value = module.vpc.private_route_table_ids
 }
+
+output "flow_logs_arn" {
+  value = aws_flow_log.flow_logs.arn
+}
+
+output "cloudwatch_log_group" {
+  value = aws_cloudwatch_log_group
+}

@@ -3,6 +3,8 @@
 #            On GitHub: https://github.com/cloudopsworks
 #            Distributed Under Apache v2.0 License
 #
+
+# Stablish this is a HUB or spoke configuration
 variable "is_hub" {
   type    = bool
   default = false
