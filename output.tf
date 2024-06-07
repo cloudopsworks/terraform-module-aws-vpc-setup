@@ -48,5 +48,8 @@ output "flow_logs_arn" {
 }
 
 output "cloudwatch_log_group" {
-  value = aws_cloudwatch_log_group
+  value = {
+    name = aws_cloudwatch_log_group.log_group.name
+    arn  = aws_cloudwatch_log_group.log_group.arn
+  }
 }
