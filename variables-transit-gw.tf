@@ -23,6 +23,7 @@ variable "shared_transit_gateway" {
     private_subnets     = list(string)
     vpc_route_table_ids = list(string)
     destination_cidr    = string
+    tgw_route_table_id  = string
   })
   default = {
     vpc_id              = null
@@ -31,5 +32,6 @@ variable "shared_transit_gateway" {
     private_subnets     = []
     vpc_route_table_ids = []
     destination_cidr    = null
+    tgw_route_table_id  = null
   }
 }
