@@ -20,7 +20,7 @@ locals {
     arn                         = null
     vpc_route_table_ids         = null
     route_ids                   = null
-    route_tables_id             = null
+    route_table_id              = null
     route_table_association_ids = null
     route_table_association     = null
     route_table_propagation     = null
