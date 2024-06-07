@@ -43,8 +43,8 @@ output "private_route_table_ids" {
   value = module.vpc.private_route_table_ids
 }
 
-output "flow_logs_arn" {
-  value = aws_flow_log.flow_logs.arn
+output "flowlogs_role_arn" {
+  value = aws_iam_role.vpc_logs.arn
 }
 
 output "cloudwatch_log_group" {
