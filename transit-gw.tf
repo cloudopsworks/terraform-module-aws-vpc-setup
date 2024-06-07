@@ -33,6 +33,7 @@ locals {
       dns_support                                     = true
       transit_gateway_default_route_table_association = false
       transit_gateway_default_route_table_propagation = false
+      transit_gateway_route_table_id                  = var.shared_transit_gateway.tgw_route_table_id
       tgw_destination_cidr                            = var.shared_transit_gateway.destination_cidr
       vpc_route_table_ids                             = module.vpc.private_route_table_ids
       tgw_routes                                      = var.transit_gateway.routes
@@ -57,6 +58,6 @@ module "transit_gateway" {
   ram_principals                        = var.transit_gateway.ram.principals
   enable_auto_accept_shared_attachments = var.transit_gateway.enable_auto_accept
   ram_resource_share_arn                = var.shared_transit_gateway.ram_share_id
-  transit_gateway_route_table_id        = var.shared_transit_gateway.tgw_route_table_id
+  #transit_gateway_route_table_id        = var.shared_transit_gateway.tgw_route_table_id
   tags                                  = local.all_tags
 }
