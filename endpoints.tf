@@ -13,6 +13,7 @@ locals {
       dns_options = {
         private_dns_only_for_inbound_resolver_endpoint = false
       }
+      subnet_ids = module.vpc.private_subnets
       tags = merge(
         { Name = "s3-vpc-endpoint-${local.system_name}" },
         local.all_tags
