@@ -20,10 +20,10 @@ locals {
     }
   }
   custom_endpoints = {
-    for e in var.endpoint_services : e => {
+    for e in var.endpoint_services : e.name => {
       service             = e.name
       private_dns_enabled = e.private_dns
-      policy              = e.policy ? data.aws_iam_policy_document.generic_endpoint_policy.json : null
+      policy              = e.policy ? data.aws_iam_policy_document.generic_endpoint_policy.json : ""
       subnet_ids          = module.vpc.private_subnets
       tags = merge(
         { Name = "${e}-vpc-endpoint-${local.system_name}" },
