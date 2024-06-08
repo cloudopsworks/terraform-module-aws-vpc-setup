@@ -146,3 +146,8 @@ variable "internal_allow_cidrs" {
   type    = list(string)
   default = []
 }
+
+variable "endpoints" {
+  type    = list(string)
+  default = []
+}

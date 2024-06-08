@@ -286,26 +286,3 @@ module "vpc" {
 
   tags = local.all_tags
 }
-
-module "vpc_endpoints" {
-  providers = {
-    aws = aws.default
-  }
-  source  = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
-  version = "~> 5.0"
-
-  vpc_id             = module.vpc.vpc_id
-  security_group_ids = [aws_security_group.endpoints.id]
-
-  endpoints = {
-    # VPC endpoint for S3
-    s3 = {
-      service = "s3"
-      tags = merge(
-        { Name = "s3-vpc-endpoint-${local.system_name}" },
-        local.all_tags
-      )
-    }
-  }
-  tags = local.all_tags
-}
