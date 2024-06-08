@@ -147,7 +147,7 @@ variable "internal_allow_cidrs" {
   default = []
 }
 
-variable "endpoints" {
+variable "endpoint_services" {
   type    = list(string)
   default = []
 }

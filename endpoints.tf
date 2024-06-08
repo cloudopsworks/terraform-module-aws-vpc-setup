@@ -20,7 +20,7 @@ locals {
     }
   }
   custom_endpoints = {
-    for e in var.endpoints : e => {
+    for e in var.endpoint_services : e => {
       service             = e
       private_dns_enabled = true
       policy              = data.aws_iam_policy_document.generic_endpoint_policy.json
