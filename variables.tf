@@ -4,7 +4,7 @@
 #            Distributed Under Apache v2.0 License
 #
 
-# Stablish this is a HUB or spoke configuration
+# Establish this is a HUB or spoke configuration
 variable "is_hub" {
   type    = bool
   default = false
@@ -107,4 +107,42 @@ variable "single_nat_gateway" {
 variable "enable_nat_gateway" {
   type    = bool
   default = true
+}
+
+variable "private_acl_rules" {
+  type = list(object({
+    cidr_block  = string,
+    from_port   = optional(number, 0),
+    to_port     = optional(number, 0),
+    protocol    = srting,
+    rule_action = string,
+  }))
+  default = []
+}
+
+variable "public_outbound_rules" {
+  type = list(object({
+    cidr_block  = string,
+    from_port   = optional(number, 0),
+    to_port     = optional(number, 0),
+    protocol    = srting,
+    rule_action = string,
+  }))
+  default = []
+}
+
+variable "public_acl_rules" {
+  type = list(object({
+    cidr_block  = string,
+    from_port   = optional(number, 0),
+    to_port     = optional(number, 0),
+    protocol    = srting,
+    rule_action = string,
+  }))
+  default = []
+}
+
+variable "internal_allow_cidrs" {
+  type    = set(string)
+  default = []
 }

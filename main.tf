@@ -3,25 +3,8 @@
 #            On GitHub: https://github.com/cloudopsworks
 #            Distributed Under Apache v2.0 License
 #
-module "vpc" {
-  providers = {
-    aws = aws.default
-  }
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 5.0"
-
-  name                  = "vpc-${local.system_name}"
-  cidr                  = var.vpc_cidr
-  azs                   = var.availability_zones
-  private_subnets       = var.private_subnets
-  private_subnet_names  = var.private_subnets_names
-  public_subnets        = var.public_subnets
-  public_subnet_names   = var.public_subnets_names
-  database_subnets      = var.database_subnets
-  database_subnet_names = var.database_subnets_names
-
-  private_dedicated_network_acl = true
-  private_inbound_acl_rules = [
+locals {
+  acl_private_default = [
     { # Allow all unrestricted inbound traffic for VPC network
       "cidr_block" : var.vpc_cidr,
       "from_port" : 0,
@@ -30,7 +13,7 @@ module "vpc" {
       "rule_action" : "allow",
       "rule_number" : 100
     },
-    { # Allow Backport binding TCP 
+    { # Allow Backport binding TCP
       "cidr_block" : "0.0.0.0/0",
       "from_port" : 1025,
       "to_port" : 65535,
@@ -38,7 +21,7 @@ module "vpc" {
       "rule_action" : "allow",
       "rule_number" : 200
     },
-    { # Allow Backport binding UDP 
+    { # Allow Backport binding UDP
       "cidr_block" : "0.0.0.0/0",
       "from_port" : 1025,
       "to_port" : 65535,
@@ -73,31 +56,7 @@ module "vpc" {
       "rule_number" : 300
     }
   ]
-
-  database_dedicated_network_acl = true
-  database_inbound_acl_rules = [
-    { # Allow all unrestricted inbound traffic for VPC network
-      "cidr_block" : var.vpc_cidr,
-      "from_port" : 0,
-      "to_port" : 0,
-      "protocol" : "-1",
-      "rule_action" : "allow",
-      "rule_number" : 100
-    }
-  ]
-  database_outbound_acl_rules = [
-    { # Allow all unrestricted outbound traffic for VPC network
-      "cidr_block" : var.vpc_cidr,
-      "from_port" : 0,
-      "to_port" : 0,
-      "protocol" : "-1",
-      "rule_action" : "allow",
-      "rule_number" : 100
-    }
-  ]
-
-  public_dedicated_network_acl = true
-  public_inbound_acl_rules = [
+  acl_public_default = [
     { # Allow all from internal network Instances behind NAT will be permitted to go out
       "cidr_block" : var.vpc_cidr,
       "from_port" : 0,
@@ -138,7 +97,7 @@ module "vpc" {
       "rule_action" : "allow",
       "rule_number" : 410
     },
-    { # Allow Backport binding TCP 
+    { # Allow Backport binding TCP
       "cidr_block" : "0.0.0.0/0",
       "from_port" : 1025,
       "to_port" : 65535,
@@ -172,15 +131,15 @@ module "vpc" {
     }
     # ,
     # { # Allow Backport binding UDP
-    #   "cidr_block": "0.0.0.0/0", 
-    #   "from_port": 1025, 
-    #   "to_port": 65535, 
-    #   "protocol": "udp", 
-    #   "rule_action": "allow", 
+    #   "cidr_block": "0.0.0.0/0",
+    #   "from_port": 1025,
+    #   "to_port": 65535,
+    #   "protocol": "udp",
+    #   "rule_action": "allow",
     #   "rule_number": 1300
     # }
   ]
-  public_outbound_acl_rules = [
+  acl_public_outbound_default = [
     { # Allow unrestricted Outbound traffic to VPC internal addresses
       "cidr_block" : var.vpc_cidr,
       "from_port" : 0,
@@ -254,6 +213,56 @@ module "vpc" {
       "rule_number" : 900
     }
   ]
+  acl_private         = local.acl_private_default
+  acl_public          = local.acl_public_default
+  acl_public_outbound = local.acl_public_outbound_default
+}
+
+module "vpc" {
+  providers = {
+    aws = aws.default
+  }
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "~> 5.0"
+
+  name                  = "vpc-${local.system_name}"
+  cidr                  = var.vpc_cidr
+  azs                   = var.availability_zones
+  private_subnets       = var.private_subnets
+  private_subnet_names  = var.private_subnets_names
+  public_subnets        = var.public_subnets
+  public_subnet_names   = var.public_subnets_names
+  database_subnets      = var.database_subnets
+  database_subnet_names = var.database_subnets_names
+
+  private_dedicated_network_acl = true
+  private_inbound_acl_rules     = local.acl_private_default
+
+  database_dedicated_network_acl = true
+  database_inbound_acl_rules = [
+    { # Allow all unrestricted inbound traffic for VPC network
+      "cidr_block" : var.vpc_cidr,
+      "from_port" : 0,
+      "to_port" : 0,
+      "protocol" : "-1",
+      "rule_action" : "allow",
+      "rule_number" : 100
+    }
+  ]
+  database_outbound_acl_rules = [
+    { # Allow all unrestricted outbound traffic for VPC network
+      "cidr_block" : var.vpc_cidr,
+      "from_port" : 0,
+      "to_port" : 0,
+      "protocol" : "-1",
+      "rule_action" : "allow",
+      "rule_number" : 100
+    }
+  ]
+
+  public_dedicated_network_acl = true
+  public_inbound_acl_rules     = local.acl_public
+  public_outbound_acl_rules    = local.acl_public_outbound
 
   create_vpc           = true
   enable_dns_hostnames = true
