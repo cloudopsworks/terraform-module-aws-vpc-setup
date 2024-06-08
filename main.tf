@@ -30,7 +30,7 @@ locals {
       "rule_number" : 300
     }
   ]
-  private_outbound_acl_rules = [
+  private_outbound_acl_rules_default = [
     { # Allow all unrestricted outbound traffic for VPC network
       "cidr_block" : var.vpc_cidr,
       "from_port" : 0,
@@ -213,9 +213,10 @@ locals {
       "rule_number" : 900
     }
   ]
-  acl_private         = local.acl_private_default
-  acl_public          = local.acl_public_default
-  acl_public_outbound = local.acl_public_outbound_default
+  acl_private          = local.acl_private_default
+  acl_private_outbound = local.private_outbound_acl_rules_default
+  acl_public           = local.acl_public_default
+  acl_public_outbound  = local.acl_public_outbound_default
 }
 
 module "vpc" {
@@ -236,7 +237,8 @@ module "vpc" {
   database_subnet_names = var.database_subnets_names
 
   private_dedicated_network_acl = true
-  private_inbound_acl_rules     = local.acl_private_default
+  private_inbound_acl_rules     = local.acl_private
+  private_outbound_acl_rules    = local.acl_private_outbound
 
   database_dedicated_network_acl = true
   database_inbound_acl_rules = [
