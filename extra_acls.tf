@@ -5,7 +5,7 @@
 #
 
 resource "aws_network_acl_rule" "custom_public_acl_rule" {
-  count          = length(var.public_acl_rules)
+  count          = module.vpc.public_network_acl_id != null ? length(var.public_acl_rules) : 0
   network_acl_id = module.vpc.public_network_acl_id
   rule_number    = count.index + 1000
   egress         = false
@@ -17,7 +17,7 @@ resource "aws_network_acl_rule" "custom_public_acl_rule" {
 }
 
 resource "aws_network_acl_rule" "custom_public_outbound_acl_rule" {
-  count          = length(var.public_acl_rules)
+  count          = module.vpc.public_network_acl_id != null ? length(var.public_outbound_rules) : 0
   network_acl_id = module.vpc.public_network_acl_id
   rule_number    = count.index + 1000
   egress         = true
@@ -29,7 +29,7 @@ resource "aws_network_acl_rule" "custom_public_outbound_acl_rule" {
 }
 
 resource "aws_network_acl_rule" "custom_private_acl_rule" {
-  count          = length(var.public_acl_rules)
+  count          = module.vpc.private_network_acl_id != null ? length(var.public_acl_rules) : 0
   network_acl_id = module.vpc.private_network_acl_id
   rule_number    = count.index + 1000
   egress         = false
@@ -41,7 +41,7 @@ resource "aws_network_acl_rule" "custom_private_acl_rule" {
 }
 
 resource "aws_network_acl_rule" "private_acl_rules_in_for_internal" {
-  count          = length(var.internal_allow_cidrs)
+  count          = module.vpc.private_network_acl_id != null ? length(var.internal_allow_cidrs) : 0
   network_acl_id = module.vpc.private_network_acl_id
   rule_number    = count.index + 1500
   egress         = false
@@ -53,7 +53,7 @@ resource "aws_network_acl_rule" "private_acl_rules_in_for_internal" {
 }
 
 resource "aws_network_acl_rule" "private_acl_rules_out_for_internal" {
-  count          = length(var.internal_allow_cidrs)
+  count          = module.vpc.private_network_acl_id != null ? length(var.internal_allow_cidrs) : 0
   network_acl_id = module.vpc.private_network_acl_id
   rule_number    = count.index + 1500
   egress         = true
@@ -65,7 +65,7 @@ resource "aws_network_acl_rule" "private_acl_rules_out_for_internal" {
 }
 
 resource "aws_network_acl_rule" "public_acl_rules_in_for_internal" {
-  count          = length(var.internal_allow_cidrs)
+  count          = module.vpc.public_network_acl_id != null ? length(var.internal_allow_cidrs) : 0
   network_acl_id = module.vpc.public_network_acl_id
   rule_number    = count.index + 1500
   egress         = false
@@ -77,7 +77,7 @@ resource "aws_network_acl_rule" "public_acl_rules_in_for_internal" {
 }
 
 resource "aws_network_acl_rule" "public_acl_rules_out_for_internal" {
-  count          = length(var.internal_allow_cidrs)
+  count          = module.vpc.public_network_acl_id != null ? length(var.internal_allow_cidrs) : 0
   network_acl_id = module.vpc.public_network_acl_id
   rule_number    = count.index + 1500
   egress         = true
@@ -89,7 +89,7 @@ resource "aws_network_acl_rule" "public_acl_rules_out_for_internal" {
 }
 
 resource "aws_network_acl_rule" "db_acl_rules_in_for_internal" {
-  count          = length(var.internal_allow_cidrs)
+  count          = module.vpc.database_network_acl_id != null ? length(var.internal_allow_cidrs) : 0
   network_acl_id = module.vpc.database_network_acl_id
   rule_number    = count.index + 1500
   egress         = false
@@ -101,7 +101,7 @@ resource "aws_network_acl_rule" "db_acl_rules_in_for_internal" {
 }
 
 resource "aws_network_acl_rule" "db_acl_rules_out_for_internal" {
-  count          = length(var.internal_allow_cidrs)
+  count          = module.vpc.database_network_acl_id != null ? length(var.internal_allow_cidrs) : 0
   network_acl_id = module.vpc.database_network_acl_id
   rule_number    = count.index + 1500
   egress         = true
