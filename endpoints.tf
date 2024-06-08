@@ -23,7 +23,7 @@ locals {
     for e in var.endpoint_services : e.name => {
       service             = e.name
       private_dns_enabled = e.private_dns
-      policy              = e.policy == true ? null : data.aws_iam_policy_document.generic_endpoint_policy.json
+      policy              = e.policy ? data.aws_iam_policy_document.generic_endpoint_policy.json : null
       subnet_ids          = module.vpc.private_subnets
       tags = merge(
         { Name = "${e.name}-vpc-endpoint-${local.system_name}" },
