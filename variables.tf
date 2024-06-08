@@ -114,7 +114,7 @@ variable "private_acl_rules" {
     cidr_block  = string,
     from_port   = optional(number, 0),
     to_port     = optional(number, 0),
-    protocol    = srting,
+    protocol    = string,
     rule_action = string,
   }))
   default = []
@@ -125,7 +125,7 @@ variable "public_outbound_rules" {
     cidr_block  = string,
     from_port   = optional(number, 0),
     to_port     = optional(number, 0),
-    protocol    = srting,
+    protocol    = string,
     rule_action = string,
   }))
   default = []
@@ -136,13 +136,13 @@ variable "public_acl_rules" {
     cidr_block  = string,
     from_port   = optional(number, 0),
     to_port     = optional(number, 0),
-    protocol    = srting,
+    protocol    = string,
     rule_action = string,
   }))
   default = []
 }
 
 variable "internal_allow_cidrs" {
-  type    = set(string)
+  type    = list(string)
   default = []
 }
