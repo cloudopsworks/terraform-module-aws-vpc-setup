@@ -6,7 +6,7 @@
 
 resource "aws_network_acl_rule" "custom_public_acl_rule" {
   provider       = aws.default
-  count          = length(var.public_acl_rules)
+  count          = length(var.public_acl_rules) * (length(var.public_subnets) > 0 ? 1 : 0)
   network_acl_id = module.vpc.public_network_acl_id
   rule_number    = count.index + 1000
   egress         = false
@@ -19,7 +19,7 @@ resource "aws_network_acl_rule" "custom_public_acl_rule" {
 
 resource "aws_network_acl_rule" "custom_public_outbound_acl_rule" {
   provider       = aws.default
-  count          = length(var.public_outbound_rules)
+  count          = length(var.public_outbound_rules) * (length(var.public_subnets) > 0 ? 1 : 0)
   network_acl_id = module.vpc.public_network_acl_id
   rule_number    = count.index + 1000
   egress         = true
