@@ -56,6 +56,10 @@ data "aws_iam_policy_document" "generic_endpoint_policy" {
 }
 
 module "vpc_endpoints" {
+  depends_on = [
+    aws_security_group.endpoints,
+    module.vpc
+  ]
   providers = {
     aws = aws.default
   }
