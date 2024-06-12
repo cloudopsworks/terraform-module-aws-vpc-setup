@@ -56,6 +56,16 @@ locals {
       "rule_number" : 300
     }
   ]
+  acl_public_vpn = [for access in var.vpn_accesses :
+    { # Allow SSH Access for bastion hosts
+      cidr_block  = access,
+      from_port   = 22,
+      to_port     = 22,
+      protocol    = "tcp",
+      rule_action = "allow",
+      rule_number = 400 + index(var.vpn_accesses, access)
+    }
+  ]
   acl_public_default = [
     { # Allow all from internal network Instances behind NAT will be permitted to go out
       "cidr_block" : var.vpc_cidr,
@@ -80,22 +90,6 @@ locals {
       "protocol" : "tcp",
       "rule_action" : "allow",
       "rule_number" : 300
-    },
-    { # Allow SSH Access for bastion hosts
-      "cidr_block" : var.vpn_accesses[0],
-      "from_port" : 22,
-      "to_port" : 22,
-      "protocol" : "tcp",
-      "rule_action" : "allow",
-      "rule_number" : 400
-    },
-    { # Allow SSH Access for bastion hosts
-      "cidr_block" : var.vpn_accesses[1],
-      "from_port" : 22,
-      "to_port" : 22,
-      "protocol" : "tcp",
-      "rule_action" : "allow",
-      "rule_number" : 410
     },
     { # Allow Backport binding TCP
       "cidr_block" : "0.0.0.0/0",
@@ -215,7 +209,7 @@ locals {
   ]
   acl_private          = local.acl_private_default
   acl_private_outbound = local.private_outbound_acl_rules_default
-  acl_public           = local.acl_public_default
+  acl_public           = concat(local.acl_public_default, local.acl_public_vpn)
   acl_public_outbound  = local.acl_public_outbound_default
 }
 
