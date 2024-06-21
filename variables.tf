@@ -58,6 +58,11 @@ variable "dhcp_dns" {
   type = list(string)
 }
 
+variable "dhcp_domain_name" {
+  type = string
+  default = "sample.com"
+}
+
 variable "database_subnets" {
   type = list(string)
 }

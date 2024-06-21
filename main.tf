@@ -272,7 +272,7 @@ module "vpc" {
   create_database_internet_gateway_route = false
 
   enable_dhcp_options      = true
-  dhcp_options_domain_name = "instance.4wrd.tech"
+  dhcp_options_domain_name = var.dhcp_domain_name
   #dhcp_options_domain_name_servers = var.dhcp_dns
 
   map_public_ip_on_launch              = true
