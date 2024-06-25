@@ -8,7 +8,6 @@ locals {
 }
 
 resource "aws_flow_log" "flow_logs" {
-  provider        = aws.default
   iam_role_arn    = aws_iam_role.vpc_logs.arn
   log_destination = aws_cloudwatch_log_group.log_group.arn
   traffic_type    = var.flow_logs_type
@@ -23,7 +22,6 @@ resource "aws_flow_log" "flow_logs" {
 }
 
 resource "aws_cloudwatch_log_group" "log_group" {
-  provider = aws.default
   name     = "network/${local.flowlogs_prefix}/${var.spoke_def}/vpc-${local.system_name}"
 }
 

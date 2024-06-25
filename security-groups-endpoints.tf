@@ -5,7 +5,6 @@
 #
 
 resource "aws_security_group" "endpoints" {
-  provider    = aws.default
   name        = "vpc-endpoints-sg-${local.system_name}"
   description = "Security group for Endpoints access"
   vpc_id      = module.vpc.vpc_id
@@ -26,7 +25,6 @@ resource "aws_security_group" "endpoints" {
 
 ### All VPC Access
 resource "aws_security_group_rule" "endpoints_ingress" {
-  provider          = aws.default
   security_group_id = aws_security_group.endpoints.id
   description       = "Allow All Access from VPC"
   from_port         = 0

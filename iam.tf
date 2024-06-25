@@ -4,7 +4,6 @@
 #            Distributed Under Apache v2.0 License
 #
 resource "aws_iam_role" "vpc_logs" {
-  provider = aws.default
   name     = "cloudwatch-logs-role-${local.system_name}"
 
   assume_role_policy = <<POLICY
@@ -25,7 +24,6 @@ POLICY
 }
 
 resource "aws_iam_role_policy" "vpc_logs" {
-  provider = aws.default
   name     = "cloudwatch-logs-pol-${local.system_name}"
   role     = aws_iam_role.vpc_logs.id
 

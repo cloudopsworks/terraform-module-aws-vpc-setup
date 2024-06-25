@@ -5,7 +5,6 @@
 #
 
 resource "aws_security_group" "ssh_admin" {
-  provider    = aws.default
   name        = "sshadmin-sg-${local.system_name}"
   description = "Security group for SSH access in "
   vpc_id      = module.vpc.vpc_id
@@ -26,7 +25,6 @@ resource "aws_security_group" "ssh_admin" {
 
 ### VPN Access
 resource "aws_security_group_rule" "ssh-admin-ingress-vpn" {
-  provider          = aws.default
   count             = length(var.vpn_accesses) > 0 ? 1 : 0
   description       = "Allow SSH Access from VPN"
   from_port         = 22

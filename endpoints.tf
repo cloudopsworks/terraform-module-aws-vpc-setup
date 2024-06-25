@@ -60,9 +60,6 @@ module "vpc_endpoints" {
     aws_security_group.endpoints,
     module.vpc
   ]
-  providers = {
-    aws = aws.default
-  }
   source  = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
   version = "~> 5.0"
 

@@ -5,7 +5,6 @@
 #
 
 resource "aws_network_acl_rule" "custom_public_acl_rule" {
-  provider       = aws.default
   count          = length(var.public_acl_rules) * (length(var.public_subnets) > 0 ? 1 : 0)
   network_acl_id = module.vpc.public_network_acl_id
   rule_number    = count.index + 1000
@@ -18,7 +17,6 @@ resource "aws_network_acl_rule" "custom_public_acl_rule" {
 }
 
 resource "aws_network_acl_rule" "custom_public_outbound_acl_rule" {
-  provider       = aws.default
   count          = length(var.public_outbound_rules) * (length(var.public_subnets) > 0 ? 1 : 0)
   network_acl_id = module.vpc.public_network_acl_id
   rule_number    = count.index + 1000
@@ -31,7 +29,6 @@ resource "aws_network_acl_rule" "custom_public_outbound_acl_rule" {
 }
 
 resource "aws_network_acl_rule" "custom_private_acl_rule" {
-  provider       = aws.default
   count          = length(var.private_acl_rules)
   network_acl_id = module.vpc.private_network_acl_id
   rule_number    = count.index + 1000
@@ -44,7 +41,6 @@ resource "aws_network_acl_rule" "custom_private_acl_rule" {
 }
 
 resource "aws_network_acl_rule" "private_acl_rules_in_for_internal" {
-  provider       = aws.default
   count          = length(var.internal_allow_cidrs)
   network_acl_id = module.vpc.private_network_acl_id
   rule_number    = count.index + 1500
@@ -57,7 +53,6 @@ resource "aws_network_acl_rule" "private_acl_rules_in_for_internal" {
 }
 
 resource "aws_network_acl_rule" "private_acl_rules_out_for_internal" {
-  provider       = aws.default
   count          = length(var.internal_allow_cidrs)
   network_acl_id = module.vpc.private_network_acl_id
   rule_number    = count.index + 1500
@@ -70,7 +65,6 @@ resource "aws_network_acl_rule" "private_acl_rules_out_for_internal" {
 }
 
 resource "aws_network_acl_rule" "public_acl_rules_in_for_internal" {
-  provider       = aws.default
   count          = length(var.internal_allow_cidrs) * (length(var.public_subnets) > 0 ? 1 : 0)
   network_acl_id = module.vpc.public_network_acl_id
   rule_number    = count.index + 1500
@@ -83,7 +77,6 @@ resource "aws_network_acl_rule" "public_acl_rules_in_for_internal" {
 }
 
 resource "aws_network_acl_rule" "public_acl_rules_out_for_internal" {
-  provider       = aws.default
   count          = length(var.internal_allow_cidrs) * (length(var.public_subnets) > 0 ? 1 : 0)
   network_acl_id = module.vpc.public_network_acl_id
   rule_number    = count.index + 1500
@@ -96,7 +89,6 @@ resource "aws_network_acl_rule" "public_acl_rules_out_for_internal" {
 }
 
 resource "aws_network_acl_rule" "db_acl_rules_in_for_internal" {
-  provider       = aws.default
   count          = length(var.internal_allow_cidrs)
   network_acl_id = module.vpc.database_network_acl_id
   rule_number    = count.index + 1500
@@ -109,7 +101,6 @@ resource "aws_network_acl_rule" "db_acl_rules_in_for_internal" {
 }
 
 resource "aws_network_acl_rule" "db_acl_rules_out_for_internal" {
-  provider       = aws.default
   count          = length(var.internal_allow_cidrs)
   network_acl_id = module.vpc.database_network_acl_id
   rule_number    = count.index + 1500

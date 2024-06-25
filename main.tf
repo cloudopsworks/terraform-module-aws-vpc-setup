@@ -214,9 +214,6 @@ locals {
 }
 
 module "vpc" {
-  providers = {
-    aws = aws.default
-  }
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
 
