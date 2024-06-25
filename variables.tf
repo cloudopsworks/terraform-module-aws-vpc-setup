@@ -59,7 +59,7 @@ variable "dhcp_dns" {
 }
 
 variable "dhcp_domain_name" {
-  type = string
+  type    = string
   default = "sample.com"
 }
 

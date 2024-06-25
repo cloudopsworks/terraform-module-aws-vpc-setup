@@ -18,7 +18,7 @@ resource "local_file" "keypair_priv_bastion" {
 }
 
 resource "aws_key_pair" "bastion_key" {
-  count    = var.create_bastion ? 1 : 0
+  count = var.create_bastion ? 1 : 0
 
   key_name   = "key/bastion-${local.system_name}"
   public_key = tls_private_key.keypair_gen_bastion[count.index].public_key_openssh
@@ -57,7 +57,7 @@ data "cloudinit_config" "prometheus_server_cloudinit" {
 }
 
 resource "aws_instance" "bastion_server" {
-  count    = var.create_bastion ? 1 : 0
+  count = var.create_bastion ? 1 : 0
 
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.bastion_size
@@ -111,8 +111,8 @@ POLICY
 }
 
 resource "aws_iam_instance_profile" "bastion" {
-  name     = "bastion-vm-role-${local.system_name}"
-  role     = aws_iam_role.bastion.name
+  name = "bastion-vm-role-${local.system_name}"
+  role = aws_iam_role.bastion.name
 
 }
 

@@ -22,7 +22,7 @@ resource "aws_flow_log" "flow_logs" {
 }
 
 resource "aws_cloudwatch_log_group" "log_group" {
-  name     = "network/${local.flowlogs_prefix}/${var.spoke_def}/vpc-${local.system_name}"
+  name = "network/${local.flowlogs_prefix}/${var.spoke_def}/vpc-${local.system_name}"
 }
 
 
