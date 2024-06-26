@@ -101,7 +101,7 @@ resource "aws_network_acl_rule" "db_acl_rules_in_for_internal" {
 }
 
 resource "aws_network_acl_rule" "db_acl_rules_out_for_internal" {
-  count          = module.vpc.database_network_acl_id != "" ? length(var.internal_allow_cidrs) :0
+  count          = module.vpc.database_network_acl_id != "" ? length(var.internal_allow_cidrs) : 0
   network_acl_id = module.vpc.database_network_acl_id
   rule_number    = count.index + 1500
   egress         = true
