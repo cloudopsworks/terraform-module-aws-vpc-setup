@@ -65,3 +65,7 @@ output "cloudwatch_log_group" {
     arn  = aws_cloudwatch_log_group.log_group.arn
   }
 }
+
+output "vpc_name" {
+  value = "vpc-${local.system_name}"
+}
