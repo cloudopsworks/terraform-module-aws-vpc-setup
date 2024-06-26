@@ -114,6 +114,16 @@ variable "enable_nat_gateway" {
   default = true
 }
 
+variable "reuse_nat_ips" {
+  type    = bool
+  default = false
+}
+
+variable "external_nat_ip_ids" {
+  type    = list(string)
+  default = []
+}
+
 variable "private_acl_rules" {
   type = list(object({
     cidr_block  = string,
