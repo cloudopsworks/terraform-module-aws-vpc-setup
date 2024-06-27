@@ -72,6 +72,22 @@ variable "database_subnets_names" {
   default = []
 }
 
+variable "intra_subnets" {
+  description = "A list of intra subnets inside the VPC"
+  type        = list(string)
+  default     = []
+}
+
+variable "multiple_intra_route_tables" {
+  type    = bool
+  default = false
+}
+
+variable "multiple_public_route_tables" {
+  type    = bool
+  default = false
+}
+
 variable "create_bastion" {
   type = bool
 }

@@ -217,15 +217,19 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
 
-  name                  = "vpc-${local.system_name}"
-  cidr                  = var.vpc_cidr
-  azs                   = var.availability_zones
-  private_subnets       = var.private_subnets
-  private_subnet_names  = var.private_subnets_names
-  public_subnets        = var.public_subnets
-  public_subnet_names   = var.public_subnets_names
-  database_subnets      = var.database_subnets
-  database_subnet_names = var.database_subnets_names
+  name                                = "vpc-${local.system_name}"
+  cidr                                = var.vpc_cidr
+  azs                                 = var.availability_zones
+  private_subnets                     = var.private_subnets
+  private_subnet_names                = var.private_subnets_names
+  public_subnets                      = var.public_subnets
+  public_subnet_names                 = var.public_subnets_names
+  database_subnets                    = var.database_subnets
+  database_subnet_names               = var.database_subnets_names
+  intra_subnets                       = var.intra_subnets
+  create_multiple_intra_route_tables  = var.multiple_intra_route_tables
+  create_multiple_public_route_tables = var.multiple_public_route_tables
+
 
   private_dedicated_network_acl = true
   private_inbound_acl_rules     = local.acl_private
