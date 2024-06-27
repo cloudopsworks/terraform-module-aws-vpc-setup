@@ -171,3 +171,8 @@ variable "endpoint_services" {
   }))
   default = []
 }
+
+variable "default_endpoint" {
+  type    = bool
+  default = true
+}
