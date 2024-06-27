@@ -69,3 +69,11 @@ output "cloudwatch_log_group" {
 output "vpc_name" {
   value = "vpc-${local.system_name}"
 }
+
+output "intra_subnets" {
+  value = module.vpc.intra_subnets
+}
+
+output "intra_route_table_ids" {
+  value = module.vpc.intra_route_table_ids
+}
