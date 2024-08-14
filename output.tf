@@ -35,6 +35,10 @@ output "database_subnet_group" {
   value = module.vpc.database_subnet_group
 }
 
+output "database_subnet_group_name" {
+  value = module.vpc.database_subnet_group_name
+}
+
 output "nat_address" {
   value = tolist(module.vpc.nat_public_ips)
 }
