@@ -192,3 +192,8 @@ variable "default_endpoint" {
   type    = bool
   default = true
 }
+
+variable "secrets_manager_enabled" {
+  type    = bool
+  default = false
+}
