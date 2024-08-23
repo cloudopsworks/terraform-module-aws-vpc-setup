@@ -16,7 +16,7 @@ resource "aws_flow_log" "flow_logs" {
   tags = merge(
     local.all_tags,
     {
-      Name = "flowlogs-vpc-${local.system_name}"
+      Name = "vpc-${local.system_name}-flowlogs"
     }
   )
 }

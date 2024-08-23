@@ -15,7 +15,7 @@ locals {
       }
       subnet_ids = module.vpc.private_subnets
       tags = merge(
-        { Name = "s3-vpc-endpoint-${local.system_name}" },
+        { Name = "${local.system_name}-s3-vpc-endpoint" },
         local.all_tags
       )
     }
@@ -27,7 +27,7 @@ locals {
       policy              = e.policy ? data.aws_iam_policy_document.generic_endpoint_policy.json : null
       subnet_ids          = module.vpc.private_subnets
       tags = merge(
-        { Name = "${e.name}-vpc-endpoint-${local.system_name}" },
+        { Name = "${local.system_name}-${e.name}-vpc-endpoint" },
         local.all_tags
       )
     }

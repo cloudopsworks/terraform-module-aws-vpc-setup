@@ -5,7 +5,7 @@
 #
 
 resource "aws_security_group" "bastion" {
-  name        = "bastion-vm-sg-${local.system_name}"
+  name        = "bastion-vm-${local.system_name}-sg"
   description = "Security group for Bastion access to any resource"
   vpc_id      = module.vpc.vpc_id
 
@@ -17,7 +17,10 @@ resource "aws_security_group" "bastion" {
   }
 
   tags = merge(local.all_tags, tomap({
-    "Name" = "bastion-vm-sg-${local.system_name}"
+    "Name" = "bastion-vm-${local.system_name}-sg"
   }))
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 

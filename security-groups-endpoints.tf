@@ -5,7 +5,7 @@
 #
 
 resource "aws_security_group" "endpoints" {
-  name        = "vpc-endpoints-sg-${local.system_name}"
+  name        = "vpc-${local.system_name}-endpoints-sg"
   description = "Security group for Endpoints access"
   vpc_id      = module.vpc.vpc_id
 
@@ -17,8 +17,11 @@ resource "aws_security_group" "endpoints" {
   }
 
   tags = merge(local.all_tags, tomap({
-    "Name" = "vpc-endpoints-sg-${local.system_name}"
+    "Name" = "vpc-${local.system_name}-endpoints-sg"
   }))
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 

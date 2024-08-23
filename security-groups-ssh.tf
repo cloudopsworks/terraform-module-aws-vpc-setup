@@ -5,7 +5,7 @@
 #
 
 resource "aws_security_group" "ssh_admin" {
-  name        = "sshadmin-sg-${local.system_name}"
+  name        = "vpc-${local.system_name}-sshadmin-sg"
   description = "Security group for SSH access in "
   vpc_id      = module.vpc.vpc_id
 
@@ -17,8 +17,11 @@ resource "aws_security_group" "ssh_admin" {
   }
 
   tags = merge(local.all_tags, tomap({
-    "Name" = "sshadmin-sg-${local.system_name}"
+    "Name" = "vpc-${local.system_name}-sshadmin-sg"
   }))
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 

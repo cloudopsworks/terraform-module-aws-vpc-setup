@@ -4,8 +4,7 @@
 #            Distributed Under Apache v2.0 License
 #
 resource "aws_iam_role" "vpc_logs" {
-  name = "cloudwatch-logs-role-${local.system_name}"
-
+  name               = "vpc-${local.system_name}-cloudwatch-logs-role"
   assume_role_policy = <<POLICY
 {
   "Version": "2012-10-17",
@@ -21,12 +20,12 @@ resource "aws_iam_role" "vpc_logs" {
   ]
 }
 POLICY
+  tags               = local.all_tags
 }
 
 resource "aws_iam_role_policy" "vpc_logs" {
-  name = "cloudwatch-logs-pol-${local.system_name}"
-  role = aws_iam_role.vpc_logs.id
-
+  name   = "cloudwatch-logs-pol-${local.system_name}"
+  role   = aws_iam_role.vpc_logs.id
   policy = <<POLICY
 {
   "Version": "2012-10-17",

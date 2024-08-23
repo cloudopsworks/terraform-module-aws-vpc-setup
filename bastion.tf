@@ -92,7 +92,7 @@ resource "aws_instance" "bastion_server" {
 }
 
 resource "aws_iam_role" "bastion" {
-  name               = "bastion-vm-role-${local.system_name}"
+  name               = "bastion-vm-${local.system_name}-role"
   assume_role_policy = <<POLICY
 {
   "Version": "2012-10-17",
@@ -107,13 +107,19 @@ resource "aws_iam_role" "bastion" {
   ]
 }
 POLICY
-
+  tags               = local.all_tags
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_iam_instance_profile" "bastion" {
-  name = "bastion-vm-role-${local.system_name}"
+  name = "bastion-vm-${local.system_name}-role"
   role = aws_iam_role.bastion.name
-
+  tags = local.all_tags
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "bastion_admin" {
