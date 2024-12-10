@@ -22,6 +22,9 @@ resource "aws_key_pair" "bastion_key" {
 
   key_name   = "key/bastion-${local.system_name}"
   public_key = tls_private_key.keypair_gen_bastion[count.index].public_key_openssh
+  tags = merge(local.all_tags, {
+    Name = "bastion-${local.system_name}"
+  })
 }
 
 data "aws_ami" "ubuntu" {
