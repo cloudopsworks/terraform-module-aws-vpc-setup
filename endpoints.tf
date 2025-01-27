@@ -9,11 +9,12 @@ locals {
     # VPC endpoint for S3
     s3 = {
       service             = "s3"
+      service_type        = "Gateway"
       private_dns_enabled = true
       dns_options = {
         private_dns_only_for_inbound_resolver_endpoint = false
       }
-      subnet_ids = module.vpc.private_subnets
+
       tags = merge(
         { Name = "${local.system_name}-s3-vpc-endpoint" },
         local.all_tags
@@ -23,9 +24,9 @@ locals {
   custom_endpoints = {
     for e in var.endpoint_services : e.name => {
       service             = e.name
+      service_type        = e.service_type
       private_dns_enabled = e.private_dns
       policy              = e.policy ? data.aws_iam_policy_document.generic_endpoint_policy.json : null
-      subnet_ids          = module.vpc.private_subnets
       tags = merge(
         { Name = "${local.system_name}-${e.name}-vpc-endpoint" },
         local.all_tags
@@ -64,6 +65,7 @@ module "vpc_endpoints" {
   version = "~> 5.0"
 
   vpc_id             = module.vpc.vpc_id
+  subnet_ids         = concat(module.vpc.private_subnets, module.vpc.database_subnets, module.vpc.intra_subnets)
   security_group_ids = [aws_security_group.endpoints.id]
   endpoints          = local.endpoints
   tags               = local.all_tags
