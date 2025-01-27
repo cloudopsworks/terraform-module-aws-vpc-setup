@@ -24,7 +24,7 @@ locals {
   custom_endpoints = {
     for e in var.endpoint_services : e.name => {
       service             = e.name
-      service_type        = e.service_type
+      service_type        = try(e.type, "Interface")
       private_dns_enabled = e.private_dns
       policy              = e.policy ? data.aws_iam_policy_document.generic_endpoint_policy.json : null
       tags = merge(
