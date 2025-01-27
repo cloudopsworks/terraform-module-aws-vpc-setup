@@ -11,10 +11,6 @@ locals {
       service             = "s3"
       service_type        = "Gateway"
       private_dns_enabled = true
-      dns_options = {
-        private_dns_only_for_inbound_resolver_endpoint = false
-      }
-
       tags = merge(
         { Name = "${local.system_name}-s3-vpc-endpoint" },
         local.all_tags
@@ -27,6 +23,9 @@ locals {
       service_type        = try(e.type, "Interface")
       private_dns_enabled = e.private_dns
       policy              = e.policy ? data.aws_iam_policy_document.generic_endpoint_policy.json : null
+      dns_options = e.type == "Interface" ? {
+        private_dns_only_for_inbound_resolver_endpoint = e.dns_only_for_inbound
+      } : {}
       tags = merge(
         { Name = "${local.system_name}-${e.name}-vpc-endpoint" },
         local.all_tags
