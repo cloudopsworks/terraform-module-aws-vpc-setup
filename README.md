@@ -10,10 +10,15 @@
 
 [![cloudopsworks][logo]](https://cloudops.works/)
 
-# Terraform VPC Setup Module
+# Terraform AWS VPC Setup Terraform Module
 
 
-VPC Module for setting up basic environment.
+
+
+This module provides a straightforward way to create and manage AWS VPC resources,
+including subnets, route tables, flow logs, and other associated network constructs.
+It is maintained by cloudopsworks and can be used in conjunction with Terragrunt
+for streamlined deployment and configuration.
 
 
 ---
@@ -27,6 +32,8 @@ This project is part of our comprehensive approach towards DevOps Acceleration.
 [<img align="right" title="Share on Twitter" width="24" height="24" src="https://docs.cloudops.works/images/ionicons/logo-twitter.svg" />][share_twitter]
 
 
+[![Terraform Open Source Modules](https://docs.cloudops.works/images/terraform-open-source-modules.svg)][terraform_modules]
+
 
 
 It's 100% Open Source and licensed under the [APACHE2](LICENSE).
@@ -37,15 +44,137 @@ It's 100% Open Source and licensed under the [APACHE2](LICENSE).
 
 
 
+We have [*lots of terraform modules*][terraform_modules] that are Open Source and we are trying to get them well-maintained!. Check them out!
 
 
 
 
 
 
+## Introduction
+
+The AWS VPC Setup Terraform Module on the develop branch offers a modular approach
+to building out secure and highly available VPC environments on Amazon Web Services (AWS).
+It includes the following core functionalities:
+• Creation and configuration of a VPC
+• Public, private, and other subnet tiers
+• Internet and NAT gateways (if enabled)
+• Optional VPC Flow Logs to S3 or CloudWatch
+• Configurable DNS support, hostnames, and tagging
+
+Additionally, this repository contains a .boilerplate folder, which houses a
+[Gruntwork Terragrunt](https://github.com/gruntwork-io/terragrunt) Boilerplate template.
+You can leverage terragrunt scaffold to auto-generate Terragrunt configuration files
+referencing this module.
+
+## Usage
 
 
+**IMPORTANT:** The `master` branch is used in `source` just as an example. In your code, do not pin to `master` because there may be breaking changes between releases.
+Instead pin to the release tag (e.g. `?ref=vX.Y.Z`) of one of our [latest releases](https://github.com/cloudopsworks/terraform-module-aws-vpc-setup/releases).
 
+
+Direct Terraform Usage
+1. Reference the module in your Terraform configuration:
+```hcl
+module “aws_vpc_setup” {
+  source = “git::https://github.com/cloudopsworks/terraform-module-aws-vpc-setup.git?ref=develop”
+  vpc_cidr             = “10.0.0.0/16”
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+  enable_flow_logs     = false
+  Optional variables
+
+  flow_logs_s3_bucket        = “my-flow-logs-bucket”
+  flow_logs_cloudwatch_group = “my-flow-logs-group”
+  tags = {
+    Environment = “test”
+  }
+}
+```
+2. Initialize your Terraform working directory:
+  ```bash
+  terraform init
+  ```
+3. Plan your infrastructure to see proposed changes:
+  ```bash
+  terraform plan
+  ```
+4. Apply the configuration to provision resources:
+  ```bash
+  terraform apply
+  ```
+
+Terragrunt Usage with Scaffold
+ 1. Run terragrunt scaffold to generate a boilerplate Terragrunt configuration:
+  ```bash
+  terragrunt scaffold \
+    --module-name aws-vpc-setup \
+    --source https://github.com/cloudopsworks/terraform-module-aws-vpc-setup.git?ref=develop
+  ```
+ 2. Edit the generated terragrunt.hcl file to override input variables as needed (e.g., vpc_cidr, enable_flow_logs, etc.).
+ 3. Run terragrunt to initialize and deploy:
+  ```bash
+  terragrunt init
+  terragrunt plan
+  terragrunt apply
+  ```
+
+## Quick Start
+
+1. Clone or reference the module:
+```bash
+git clone --branch develop https://github.com/cloudopsworks/terraform-module-aws-vpc-setup.git 
+```\
+2. (Optional) Use terragrunt scaffold to generate Terragrunt boilerplate:
+```bash
+terragrunt scaffold \
+  --module-name aws-vpc-setup \
+  --source https://github.com/cloudopsworks/terraform-module-aws-vpc-setup.git?ref=develop
+```\
+3. Update the terragrunt.hcl (or direct Terraform config) to suit your environment (e.g., vpc_cidr, logging options, tags).
+4. Initialize and apply using Terragrunt or Terraform:
+```bash
+terragrunt init
+terragrunt apply
+or
+terraform init
+terraform apply
+```
+
+
+## Examples
+
+Minimal example: Creating a single VPC with default configurations.
+Suppose your repository structure:
+
+``` 
+live/ 
+└── dev/
+└── vpc/
+└── terragrunt.hcl
+```
+
+In terragrunt.hcl:
+
+```hcl
+terraform {
+  source = “git::https://github.com/cloudopsworks/terraform-module-aws-vpc-setup.git//?ref=develop”
+}
+
+inputs = {
+  vpc_cidr             = “10.0.0.0/16”
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+  enable_flow_logs     = false
+  tags = {
+    Environment = “dev”
+    Project     = “my-vpc”
+  }
+}
+```
+
+This creates a new VPC with DNS support/hostnames enabled, and no flow logs.
 
 
 
@@ -56,7 +185,8 @@ Available targets:
   help                                Help screen
   help/all                            Display help for all targets
   help/short                          This help short screen
-  lint                                Lint terraform code
+  lint                                Lint terraform/opentofu code
+  tag                                 Tag the current version
 
 ```
 ## Requirements
@@ -69,16 +199,16 @@ Available targets:
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.52.0 |
-| <a name="provider_cloudinit"></a> [cloudinit](#provider\_cloudinit) | 2.3.4 |
-| <a name="provider_local"></a> [local](#provider\_local) | 2.5.1 |
-| <a name="provider_tls"></a> [tls](#provider\_tls) | 4.0.5 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.80.0 |
+| <a name="provider_cloudinit"></a> [cloudinit](#provider\_cloudinit) | 2.3.5 |
+| <a name="provider_local"></a> [local](#provider\_local) | 2.5.2 |
+| <a name="provider_tls"></a> [tls](#provider\_tls) | 4.0.6 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_tags"></a> [tags](#module\_tags) | cloudopsworks/tags/local | 1.0.8 |
+| <a name="module_tags"></a> [tags](#module\_tags) | cloudopsworks/tags/local | 1.0.9 |
 | <a name="module_vpc"></a> [vpc](#module\_vpc) | terraform-aws-modules/vpc/aws | ~> 5.0 |
 | <a name="module_vpc_endpoints"></a> [vpc\_endpoints](#module\_vpc\_endpoints) | terraform-aws-modules/vpc/aws//modules/vpc-endpoints | ~> 5.0 |
 
@@ -95,6 +225,19 @@ Available targets:
 | [aws_iam_role_policy_attachment.bastion_admin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_instance.bastion_server](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) | resource |
 | [aws_key_pair.bastion_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/key_pair) | resource |
+| [aws_network_acl_rule.custom_private_acl_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/network_acl_rule) | resource |
+| [aws_network_acl_rule.custom_public_acl_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/network_acl_rule) | resource |
+| [aws_network_acl_rule.custom_public_outbound_acl_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/network_acl_rule) | resource |
+| [aws_network_acl_rule.db_acl_rules_in_for_internal](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/network_acl_rule) | resource |
+| [aws_network_acl_rule.db_acl_rules_out_for_internal](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/network_acl_rule) | resource |
+| [aws_network_acl_rule.private_acl_rules_in_for_internal](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/network_acl_rule) | resource |
+| [aws_network_acl_rule.private_acl_rules_out_for_internal](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/network_acl_rule) | resource |
+| [aws_network_acl_rule.public_acl_rules_in_for_internal](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/network_acl_rule) | resource |
+| [aws_network_acl_rule.public_acl_rules_out_for_internal](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/network_acl_rule) | resource |
+| [aws_secretsmanager_secret.bastion_private_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret) | resource |
+| [aws_secretsmanager_secret.bastion_public_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret) | resource |
+| [aws_secretsmanager_secret_version.bastion_private_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret_version) | resource |
+| [aws_secretsmanager_secret_version.bastion_public_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/secretsmanager_secret_version) | resource |
 | [aws_security_group.bastion](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_security_group.endpoints](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
 | [aws_security_group.ssh_admin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group) | resource |
@@ -103,6 +246,7 @@ Available targets:
 | [local_file.keypair_priv_bastion](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [tls_private_key.keypair_gen_bastion](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) | resource |
 | [aws_ami.ubuntu](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
+| [aws_iam_policy_document.generic_endpoint_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [cloudinit_config.prometheus_server_cloudinit](https://registry.terraform.io/providers/hashicorp/cloudinit/latest/docs/data-sources/config) | data source |
 
@@ -116,13 +260,32 @@ Available targets:
 | <a name="input_create_bastion"></a> [create\_bastion](#input\_create\_bastion) | n/a | `bool` | n/a | yes |
 | <a name="input_database_subnets"></a> [database\_subnets](#input\_database\_subnets) | n/a | `list(string)` | n/a | yes |
 | <a name="input_database_subnets_names"></a> [database\_subnets\_names](#input\_database\_subnets\_names) | n/a | `list(string)` | `[]` | no |
+| <a name="input_default_endpoint"></a> [default\_endpoint](#input\_default\_endpoint) | n/a | `bool` | `true` | no |
 | <a name="input_dhcp_dns"></a> [dhcp\_dns](#input\_dhcp\_dns) | n/a | `list(string)` | n/a | yes |
+| <a name="input_dhcp_domain_name"></a> [dhcp\_domain\_name](#input\_dhcp\_domain\_name) | n/a | `string` | `"sample.com"` | no |
 | <a name="input_docker_version_server"></a> [docker\_version\_server](#input\_docker\_version\_server) | n/a | `string` | `"18.09"` | no |
+| <a name="input_enable_nat_gateway"></a> [enable\_nat\_gateway](#input\_enable\_nat\_gateway) | n/a | `bool` | `true` | no |
+| <a name="input_endpoint_services"></a> [endpoint\_services](#input\_endpoint\_services) | n/a | <pre>list(object({<br/>    name        = string<br/>    type        = optional(string, "Interface")<br/>    private_dns = optional(bool, true)<br/>    policy      = optional(bool, false)<br/>  }))</pre> | `[]` | no |
+| <a name="input_external_nat_ip_ids"></a> [external\_nat\_ip\_ids](#input\_external\_nat\_ip\_ids) | n/a | `list(string)` | `[]` | no |
+| <a name="input_extra_tags"></a> [extra\_tags](#input\_extra\_tags) | n/a | `map(string)` | `{}` | no |
+| <a name="input_flow_logs_type"></a> [flow\_logs\_type](#input\_flow\_logs\_type) | n/a | `string` | `"REJECT"` | no |
+| <a name="input_internal_allow_cidrs"></a> [internal\_allow\_cidrs](#input\_internal\_allow\_cidrs) | n/a | `list(string)` | `[]` | no |
+| <a name="input_intra_subnets"></a> [intra\_subnets](#input\_intra\_subnets) | A list of intra subnets inside the VPC | `list(string)` | `[]` | no |
+| <a name="input_is_hub"></a> [is\_hub](#input\_is\_hub) | Establish this is a HUB or spoke configuration | `bool` | `false` | no |
+| <a name="input_multiple_intra_route_tables"></a> [multiple\_intra\_route\_tables](#input\_multiple\_intra\_route\_tables) | n/a | `bool` | `false` | no |
+| <a name="input_multiple_public_route_tables"></a> [multiple\_public\_route\_tables](#input\_multiple\_public\_route\_tables) | n/a | `bool` | `false` | no |
+| <a name="input_org"></a> [org](#input\_org) | n/a | <pre>object({<br/>    organization_name = string<br/>    organization_unit = string<br/>    environment_type  = string<br/>    environment_name  = string<br/>  })</pre> | n/a | yes |
+| <a name="input_private_acl_rules"></a> [private\_acl\_rules](#input\_private\_acl\_rules) | n/a | <pre>list(object({<br/>    cidr_block  = string,<br/>    from_port   = optional(number, 0),<br/>    to_port     = optional(number, 0),<br/>    protocol    = string,<br/>    rule_action = string,<br/>  }))</pre> | `[]` | no |
 | <a name="input_private_subnets"></a> [private\_subnets](#input\_private\_subnets) | n/a | `list(any)` | n/a | yes |
 | <a name="input_private_subnets_names"></a> [private\_subnets\_names](#input\_private\_subnets\_names) | n/a | `list(string)` | `[]` | no |
+| <a name="input_public_acl_rules"></a> [public\_acl\_rules](#input\_public\_acl\_rules) | n/a | <pre>list(object({<br/>    cidr_block  = string,<br/>    from_port   = optional(number, 0),<br/>    to_port     = optional(number, 0),<br/>    protocol    = string,<br/>    rule_action = string,<br/>  }))</pre> | `[]` | no |
+| <a name="input_public_outbound_rules"></a> [public\_outbound\_rules](#input\_public\_outbound\_rules) | n/a | <pre>list(object({<br/>    cidr_block  = string,<br/>    from_port   = optional(number, 0),<br/>    to_port     = optional(number, 0),<br/>    protocol    = string,<br/>    rule_action = string,<br/>  }))</pre> | `[]` | no |
 | <a name="input_public_subnets"></a> [public\_subnets](#input\_public\_subnets) | n/a | `list(any)` | n/a | yes |
 | <a name="input_public_subnets_names"></a> [public\_subnets\_names](#input\_public\_subnets\_names) | n/a | `list(string)` | `[]` | no |
-| <a name="input_tags"></a> [tags](#input\_tags) | n/a | <pre>object({<br>    organization_name = string<br>    organization_unit = string<br>    environment_type  = string<br>    environment_name  = string<br>  })</pre> | n/a | yes |
+| <a name="input_reuse_nat_ips"></a> [reuse\_nat\_ips](#input\_reuse\_nat\_ips) | n/a | `bool` | `false` | no |
+| <a name="input_secrets_manager_enabled"></a> [secrets\_manager\_enabled](#input\_secrets\_manager\_enabled) | n/a | `bool` | `false` | no |
+| <a name="input_single_nat_gateway"></a> [single\_nat\_gateway](#input\_single\_nat\_gateway) | n/a | `bool` | `true` | no |
+| <a name="input_spoke_def"></a> [spoke\_def](#input\_spoke\_def) | n/a | `string` | `"001"` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | n/a | `string` | n/a | yes |
 | <a name="input_vpn_accesses"></a> [vpn\_accesses](#input\_vpn\_accesses) | n/a | `list(string)` | `[]` | no |
 
@@ -130,17 +293,27 @@ Available targets:
 
 | Name | Description |
 |------|-------------|
-| <a name="output_bastion_key"></a> [bastion\_key](#output\_bastion\_key) | n/a |
+| <a name="output_bastion_key"></a> [bastion\_key](#output\_bastion\_key) | # (c) 2024 - Cloud Ops Works LLC - https://cloudops.works/ On GitHub: https://github.com/cloudopsworks Distributed Under Apache v2.0 License |
 | <a name="output_bastion_public_address"></a> [bastion\_public\_address](#output\_bastion\_public\_address) | n/a |
 | <a name="output_bastion_public_ip"></a> [bastion\_public\_ip](#output\_bastion\_public\_ip) | n/a |
 | <a name="output_bastion_security_group_id"></a> [bastion\_security\_group\_id](#output\_bastion\_security\_group\_id) | n/a |
+| <a name="output_cloudwatch_log_group"></a> [cloudwatch\_log\_group](#output\_cloudwatch\_log\_group) | n/a |
+| <a name="output_database_route_table_ids"></a> [database\_route\_table\_ids](#output\_database\_route\_table\_ids) | n/a |
 | <a name="output_database_subnet_group"></a> [database\_subnet\_group](#output\_database\_subnet\_group) | n/a |
+| <a name="output_database_subnet_group_name"></a> [database\_subnet\_group\_name](#output\_database\_subnet\_group\_name) | n/a |
 | <a name="output_database_subnets"></a> [database\_subnets](#output\_database\_subnets) | n/a |
+| <a name="output_flowlogs_role_arn"></a> [flowlogs\_role\_arn](#output\_flowlogs\_role\_arn) | n/a |
+| <a name="output_intra_route_table_ids"></a> [intra\_route\_table\_ids](#output\_intra\_route\_table\_ids) | n/a |
+| <a name="output_intra_subnets"></a> [intra\_subnets](#output\_intra\_subnets) | n/a |
 | <a name="output_nat_address"></a> [nat\_address](#output\_nat\_address) | n/a |
+| <a name="output_private_route_table_ids"></a> [private\_route\_table\_ids](#output\_private\_route\_table\_ids) | n/a |
 | <a name="output_private_subnets"></a> [private\_subnets](#output\_private\_subnets) | n/a |
+| <a name="output_public_route_table_ids"></a> [public\_route\_table\_ids](#output\_public\_route\_table\_ids) | n/a |
 | <a name="output_public_subnets"></a> [public\_subnets](#output\_public\_subnets) | n/a |
 | <a name="output_ssh_admin_security_group_id"></a> [ssh\_admin\_security\_group\_id](#output\_ssh\_admin\_security\_group\_id) | n/a |
-| <a name="output_vpc_id"></a> [vpc\_id](#output\_vpc\_id) | n/a |
+| <a name="output_vpc_cidr_block"></a> [vpc\_cidr\_block](#output\_vpc\_cidr\_block) | n/a |
+| <a name="output_vpc_id"></a> [vpc\_id](#output\_vpc\_id) | # (c) 2024 - Cloud Ops Works LLC - https://cloudops.works/ On GitHub: https://github.com/cloudopsworks Distributed Under Apache v2.0 License |
+| <a name="output_vpc_name"></a> [vpc\_name](#output\_vpc\_name) | n/a |
 | <a name="output_vpn_accesses"></a> [vpn\_accesses](#output\_vpn\_accesses) | n/a |
 
 
@@ -175,7 +348,7 @@ Please use the [issue tracker](https://github.com/cloudopsworks/terraform-module
 
 ## Copyrights
 
-Copyright © 2024-2024 [Cloud Ops Works LLC](https://cloudops.works)
+Copyright © 2024-2025 [Cloud Ops Works LLC](https://cloudops.works)
 
 
 
@@ -254,10 +427,10 @@ This project is maintained by [Cloud Ops Works LLC][website].
   [readme_footer_link]: https://cloudops.works/readme/footer/link?utm_source=github&utm_medium=readme&utm_campaign=cloudopsworks/terraform-module-aws-vpc-setup&utm_content=readme_footer_link
   [readme_commercial_support_img]: https://cloudops.works/readme/commercial-support/img
   [readme_commercial_support_link]: https://cloudops.works/readme/commercial-support/link?utm_source=github&utm_medium=readme&utm_campaign=cloudopsworks/terraform-module-aws-vpc-setup&utm_content=readme_commercial_support_link
-  [share_twitter]: https://twitter.com/intent/tweet/?text=Terraform+VPC+Setup+Module&url=https://github.com/cloudopsworks/terraform-module-aws-vpc-setup
-  [share_linkedin]: https://www.linkedin.com/shareArticle?mini=true&title=Terraform+VPC+Setup+Module&url=https://github.com/cloudopsworks/terraform-module-aws-vpc-setup
+  [share_twitter]: https://twitter.com/intent/tweet/?text=Terraform+AWS+VPC+Setup+Terraform+Module&url=https://github.com/cloudopsworks/terraform-module-aws-vpc-setup
+  [share_linkedin]: https://www.linkedin.com/shareArticle?mini=true&title=Terraform+AWS+VPC+Setup+Terraform+Module&url=https://github.com/cloudopsworks/terraform-module-aws-vpc-setup
   [share_reddit]: https://reddit.com/submit/?url=https://github.com/cloudopsworks/terraform-module-aws-vpc-setup
   [share_facebook]: https://facebook.com/sharer/sharer.php?u=https://github.com/cloudopsworks/terraform-module-aws-vpc-setup
   [share_googleplus]: https://plus.google.com/share?url=https://github.com/cloudopsworks/terraform-module-aws-vpc-setup
-  [share_email]: mailto:?subject=Terraform+VPC+Setup+Module&body=https://github.com/cloudopsworks/terraform-module-aws-vpc-setup
+  [share_email]: mailto:?subject=Terraform+AWS+VPC+Setup+Terraform+Module&body=https://github.com/cloudopsworks/terraform-module-aws-vpc-setup
   [beacon]: https://ga-beacon.cloudops.works/G-7XWMFVFXZT/cloudopsworks/terraform-module-aws-vpc-setup?pixel&cs=github&cm=readme&an=terraform-module-aws-vpc-setup
