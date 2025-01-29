@@ -1,4 +1,4 @@
-name: Terraform VPC Setup Module
+name: Terraform AWS VPC Setup Terraform Module
 #logo: logo/logo.jpg
 
 license: "APACHE2"
@@ -11,21 +11,130 @@ copyrights:
 github_repo: cloudopsworks/terraform-module-aws-vpc-setup
 
 description: |-
-  VPC Module for setting up basic environment.
+  This module provides a straightforward way to create and manage AWS VPC resources,
+  including subnets, route tables, flow logs, and other associated network constructs.
+  It is maintained by cloudopsworks and can be used in conjunction with Terragrunt
+  for streamlined deployment and configuration.
 
 # Introduction to the project
-#introduction: |-
-#  This is an introduction.
+introduction: |-
+  The AWS VPC Setup Terraform Module on the develop branch offers a modular approach
+  to building out secure and highly available VPC environments on Amazon Web Services (AWS).
+  It includes the following core functionalities:
+  • Creation and configuration of a VPC
+  • Public, private, and other subnet tiers
+  • Internet and NAT gateways (if enabled)
+  • Optional VPC Flow Logs to S3 or CloudWatch
+  • Configurable DNS support, hostnames, and tagging
+  
+  Additionally, this repository contains a .boilerplate folder, which houses a
+  [Gruntwork Terragrunt](https://github.com/gruntwork-io/terragrunt) Boilerplate template.
+  You can leverage terragrunt scaffold to auto-generate Terragrunt configuration files
+  referencing this module.
 
 # How to use this project
-#usage: |-
+usage: |-
+  Direct Terraform Usage
+  1. Reference the module in your Terraform configuration:
+  ```hcl
+  module “aws_vpc_setup” {
+    source = “git::https://github.com/cloudopsworks/terraform-module-aws-vpc-setup.git?ref=develop”
+    vpc_cidr             = “10.0.0.0/16”
+    enable_dns_support   = true
+    enable_dns_hostnames = true
+    enable_flow_logs     = false
+    Optional variables
+  
+    flow_logs_s3_bucket        = “my-flow-logs-bucket”
+    flow_logs_cloudwatch_group = “my-flow-logs-group”
+    tags = {
+      Environment = “test”
+    }
+  }
+  ```
+  2. Initialize your Terraform working directory:
+    ```bash
+    terraform init
+    ```
+  3. Plan your infrastructure to see proposed changes:
+    ```bash
+    terraform plan
+    ```
+  4. Apply the configuration to provision resources:
+    ```bash
+    terraform apply
+    ```
+
+  Terragrunt Usage with Scaffold
+   1. Run terragrunt scaffold to generate a boilerplate Terragrunt configuration:
+    ```bash
+    terragrunt scaffold \
+      --module-name aws-vpc-setup \
+      --source https://github.com/cloudopsworks/terraform-module-aws-vpc-setup.git?ref=develop
+    ```
+   2. Edit the generated terragrunt.hcl file to override input variables as needed (e.g., vpc_cidr, enable_flow_logs, etc.).
+   3. Run terragrunt to initialize and deploy:
+    ```bash
+    terragrunt init
+    terragrunt plan
+    terragrunt apply
+    ```
 
 # Example usage
-#examples: |-
+examples: |-
+  Minimal example: Creating a single VPC with default configurations.
+  Suppose your repository structure:
+
+  ``` 
+  live/ 
+  └── dev/
+  └── vpc/
+  └── terragrunt.hcl
+  ```
+
+  In terragrunt.hcl:
+
+  ```hcl
+  terraform {
+    source = “git::https://github.com/cloudopsworks/terraform-module-aws-vpc-setup.git//?ref=develop”
+  }
+
+  inputs = {
+    vpc_cidr             = “10.0.0.0/16”
+    enable_dns_support   = true
+    enable_dns_hostnames = true
+    enable_flow_logs     = false
+    tags = {
+      Environment = “dev”
+      Project     = “my-vpc”
+    }
+  }
+  ```
+
+  This creates a new VPC with DNS support/hostnames enabled, and no flow logs.
 
 # How to get started quickly
-#quickstart: |-
-
+quickstart: |-
+  1. Clone or reference the module:
+  ```bash
+  git clone --branch develop https://github.com/cloudopsworks/terraform-module-aws-vpc-setup.git 
+  ```\
+  2. (Optional) Use terragrunt scaffold to generate Terragrunt boilerplate:
+  ```bash
+  terragrunt scaffold \
+    --module-name aws-vpc-setup \
+    --source https://github.com/cloudopsworks/terraform-module-aws-vpc-setup.git?ref=develop
+  ```\
+  3. Update the terragrunt.hcl (or direct Terraform config) to suit your environment (e.g., vpc_cidr, logging options, tags).
+  4. Initialize and apply using Terragrunt or Terraform:
+  ```bash
+  terragrunt init
+  terragrunt apply
+  or
+  terraform init
+  terraform apply
+  ```
+  
 include:
   - "docs/targets.md"
   - "docs/terraform.md"
