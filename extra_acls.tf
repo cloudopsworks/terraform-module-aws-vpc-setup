@@ -33,11 +33,11 @@ resource "aws_network_acl_rule" "custom_private_acl_rule" {
   network_acl_id = module.vpc.private_network_acl_id
   rule_number    = count.index + 1000
   egress         = false
-  cidr_block     = var.public_acl_rules[count.index].cidr_block
-  protocol       = var.public_acl_rules[count.index].protocol
-  rule_action    = var.public_acl_rules[count.index].rule_action
-  from_port      = var.public_acl_rules[count.index].from_port
-  to_port        = var.public_acl_rules[count.index].to_port
+  cidr_block     = var.private_acl_rules[count.index].cidr_block
+  protocol       = var.private_acl_rules[count.index].protocol
+  rule_action    = var.private_acl_rules[count.index].rule_action
+  from_port      = var.private_acl_rules[count.index].from_port
+  to_port        = var.private_acl_rules[count.index].to_port
 }
 
 resource "aws_network_acl_rule" "private_acl_rules_in_for_internal" {
