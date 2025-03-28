@@ -37,7 +37,7 @@ resource "aws_security_group_rule" "ssh-admin-ingress-vpn" {
 }
 
 ### Internal Access
-resource "aws_security_group_rule" "ssh-admin-ingress-vpn" {
+resource "aws_security_group_rule" "ssh-admin-local" {
   count             = length(var.internal_allow_cidrs) > 0 ? 1 : 0
   description       = "Allow SSH Access from local network"
   from_port         = 22
