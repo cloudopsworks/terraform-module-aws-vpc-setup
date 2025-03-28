@@ -24,8 +24,6 @@ resource "aws_security_group" "ssh_admin" {
   }
 }
 
-
-
 ### VPN Access
 resource "aws_security_group_rule" "ssh-admin-ingress-vpn" {
   count             = length(var.vpn_accesses) > 0 ? 1 : 0
@@ -35,5 +33,17 @@ resource "aws_security_group_rule" "ssh-admin-ingress-vpn" {
   protocol          = "tcp"
   security_group_id = aws_security_group.ssh_admin.id
   cidr_blocks       = var.vpn_accesses
+  type              = "ingress"
+}
+
+### Internal Access
+resource "aws_security_group_rule" "ssh-admin-ingress-vpn" {
+  count             = length(var.internal_allow_cidrs) > 0 ? 1 : 0
+  description       = "Allow SSH Access from local network"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  security_group_id = aws_security_group.ssh_admin.id
+  cidr_blocks       = var.internal_allow_cidrs
   type              = "ingress"
 }
