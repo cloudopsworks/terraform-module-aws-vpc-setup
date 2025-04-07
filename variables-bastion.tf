@@ -12,3 +12,8 @@ variable "bastion_storage" {
   type    = string
   default = "10"
 }
+
+variable "bastion_state" {
+  type    = string
+  default = "stopped"
+}
