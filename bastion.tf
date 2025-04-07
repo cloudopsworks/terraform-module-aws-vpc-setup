@@ -125,7 +125,7 @@ resource "aws_iam_instance_profile" "bastion" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "bastion_admin" {
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+resource "aws_iam_role_policy_attachment" "bastion_ssm" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   role       = aws_iam_role.bastion.name
 }
