@@ -182,3 +182,9 @@ variable "secrets_manager_enabled" {
   type    = bool
   default = false
 }
+
+variable "logs_retention" {
+  description = "CloudWatch Logs retention in days"
+  type        = number
+  default     = 30
+}
