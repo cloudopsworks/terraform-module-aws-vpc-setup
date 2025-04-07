@@ -60,8 +60,7 @@ data "cloudinit_config" "prometheus_server_cloudinit" {
 }
 
 resource "aws_instance" "bastion_server" {
-  count = var.create_bastion ? 1 : 0
-
+  count                  = var.create_bastion ? 1 : 0
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.bastion_size
   key_name               = aws_key_pair.bastion_key[count.index].key_name
@@ -92,6 +91,12 @@ resource "aws_instance" "bastion_server" {
     Name = "bastion-vm-${local.system_name}"
     Role = "Bastion"
   })
+}
+
+resource "aws_ec2_instance_state" "bastion_server" {
+  count       = var.create_bastion ? 1 : 0
+  instance_id = aws_instance.bastion_server[count.index].id
+  state       = var.bastion_state
 }
 
 resource "aws_iam_role" "bastion" {
