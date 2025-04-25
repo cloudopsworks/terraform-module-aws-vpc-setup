@@ -131,7 +131,7 @@ locals {
       "to_port" : 65535,
       "protocol" : "tcp",
       "rule_action" : "allow",
-      "rule_number" : 500
+      "rule_number" : 501
     },
     { # Allow access to SMTP, specially if there are instances behind NAT
       "cidr_block" : "0.0.0.0/0",
