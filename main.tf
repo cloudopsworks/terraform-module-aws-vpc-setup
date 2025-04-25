@@ -13,21 +13,37 @@ locals {
       "rule_action" : "allow",
       "rule_number" : 100
     },
-    { # Allow Backport binding TCP
+    { # Allow Backport binding TCP Except RDP < 3389
       "cidr_block" : "0.0.0.0/0",
-      "from_port" : 1025,
-      "to_port" : 65535,
+      "from_port" : 1024,
+      "to_port" : 3388,
       "protocol" : "tcp",
       "rule_action" : "allow",
       "rule_number" : 200
     },
-    { # Allow Backport binding UDP
+    { # Allow Backport binding TCP Except RDP > 3389
       "cidr_block" : "0.0.0.0/0",
-      "from_port" : 1025,
+      "from_port" : 3390,
       "to_port" : 65535,
+      "protocol" : "tcp",
+      "rule_action" : "allow",
+      "rule_number" : 201
+    },
+    { # Allow Backport binding UDP Except RDP < 3389
+      "cidr_block" : "0.0.0.0/0",
+      "from_port" : 1024,
+      "to_port" : 3388,
       "protocol" : "udp",
       "rule_action" : "allow",
       "rule_number" : 300
+    },
+    { # Allow Backport binding UDP Except RDP > 3389
+      "cidr_block" : "0.0.0.0/0",
+      "from_port" : 3390,
+      "to_port" : 65535,
+      "protocol" : "udp",
+      "rule_action" : "allow",
+      "rule_number" : 301
     }
   ]
   private_outbound_acl_rules_default = [
@@ -56,7 +72,7 @@ locals {
       "rule_number" : 300
     }
   ]
-  acl_public_vpn = [for access in var.vpn_accesses :
+  acl_public_vpn = concat([for access in var.vpn_accesses :
     { # Allow SSH Access for bastion hosts
       cidr_block  = access,
       from_port   = 22,
@@ -65,7 +81,17 @@ locals {
       rule_action = "allow",
       rule_number = 400 + index(var.vpn_accesses, access)
     }
-  ]
+    ],
+    [for access in var.vpn_accesses :
+      { # Allow SSH Access for bastion hosts
+        cidr_block  = access,
+        from_port   = 3389,
+        to_port     = 3389,
+        protocol    = "tcp",
+        rule_action = "allow",
+        rule_number = 400 + index(var.vpn_accesses, access)
+      }
+  ])
   acl_public_default = [
     { # Allow all from internal network Instances behind NAT will be permitted to go out
       "cidr_block" : var.vpc_cidr,
@@ -91,9 +117,17 @@ locals {
       "rule_action" : "allow",
       "rule_number" : 300
     },
-    { # Allow Backport binding TCP
+    { # Allow Backport binding TCP except RDP < 3389
       "cidr_block" : "0.0.0.0/0",
-      "from_port" : 1025,
+      "from_port" : 1024,
+      "to_port" : 3388,
+      "protocol" : "tcp",
+      "rule_action" : "allow",
+      "rule_number" : 500
+    },
+    { # Allow Backport binding TCP except RDP > 3389
+      "cidr_block" : "0.0.0.0/0",
+      "from_port" : 3390,
       "to_port" : 65535,
       "protocol" : "tcp",
       "rule_action" : "allow",
@@ -144,7 +178,7 @@ locals {
     },
     { # Allow Outbound traffic for ephemeral ports (NAT+NLB/ALB)
       "cidr_block" : "0.0.0.0/0",
-      "from_port" : 1025,
+      "from_port" : 1024,
       "to_port" : 65535,
       "protocol" : "tcp",
       "rule_action" : "allow",
