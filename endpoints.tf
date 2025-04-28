@@ -67,7 +67,6 @@ module "vpc_endpoints" {
   version = "~> 5.0"
 
   vpc_id             = module.vpc.vpc_id
-  subnet_ids         = concat(module.vpc.private_subnets, module.vpc.database_subnets, module.vpc.intra_subnets)
   security_group_ids = [aws_security_group.endpoints.id]
   endpoints          = local.endpoints
   tags               = local.all_tags
