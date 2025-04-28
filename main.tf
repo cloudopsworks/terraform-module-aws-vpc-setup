@@ -179,18 +179,10 @@ locals {
     { # Allow Outbound traffic for ephemeral ports (NAT+NLB/ALB)
       "cidr_block"  = "0.0.0.0/0"
       "from_port"   = 1024
-      "to_port"     = 3388
-      "protocol"    = "tcp"
-      "rule_action" = "allow"
-      "rule_number" : 200
-    },
-    { # Allow Outbound traffic for ephemeral ports (NAT+NLB/ALB)
-      "cidr_block"  = "0.0.0.0/0"
-      "from_port"   = 3390
       "to_port"     = 65535
       "protocol"    = "tcp"
       "rule_action" = "allow"
-      "rule_number" : 201
+      "rule_number" : 200
     },
     { # Allow Outbound traffic for HTTP (NAT)
       "cidr_block"  = "0.0.0.0/0"
