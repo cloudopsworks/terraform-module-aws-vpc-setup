@@ -6,69 +6,69 @@
 locals {
   acl_private_default = [
     { # Allow all unrestricted inbound traffic for VPC network
-      "cidr_block" : var.vpc_cidr,
-      "from_port" : 0,
-      "to_port" : 0,
-      "protocol" : "-1",
-      "rule_action" : "allow",
+      "cidr_block"  = var.vpc_cidr
+      "from_port"   = 0
+      "to_port"     = 0
+      "protocol"    = "-1"
+      "rule_action" = "allow"
       "rule_number" : 100
     },
     { # Allow Backport binding TCP Except RDP < 3389
-      "cidr_block" : "0.0.0.0/0",
-      "from_port" : 1024,
-      "to_port" : 3388,
-      "protocol" : "tcp",
-      "rule_action" : "allow",
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 1024
+      "to_port"     = 3388
+      "protocol"    = "tcp"
+      "rule_action" = "allow"
       "rule_number" : 200
     },
     { # Allow Backport binding TCP Except RDP > 3389
-      "cidr_block" : "0.0.0.0/0",
-      "from_port" : 3390,
-      "to_port" : 65535,
-      "protocol" : "tcp",
-      "rule_action" : "allow",
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 3390
+      "to_port"     = 65535
+      "protocol"    = "tcp"
+      "rule_action" = "allow"
       "rule_number" : 201
     },
     { # Allow Backport binding UDP Except RDP < 3389
-      "cidr_block" : "0.0.0.0/0",
-      "from_port" : 1024,
-      "to_port" : 3388,
-      "protocol" : "udp",
-      "rule_action" : "allow",
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 1024
+      "to_port"     = 3388
+      "protocol"    = "udp"
+      "rule_action" = "allow"
       "rule_number" : 300
     },
     { # Allow Backport binding UDP Except RDP > 3389
-      "cidr_block" : "0.0.0.0/0",
-      "from_port" : 3390,
-      "to_port" : 65535,
-      "protocol" : "udp",
-      "rule_action" : "allow",
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 3390
+      "to_port"     = 65535
+      "protocol"    = "udp"
+      "rule_action" = "allow"
       "rule_number" : 301
     }
   ]
   private_outbound_acl_rules_default = [
     { # Allow all unrestricted outbound traffic for VPC network
-      "cidr_block" : var.vpc_cidr,
-      "from_port" : 0,
-      "to_port" : 0,
-      "protocol" : "-1",
-      "rule_action" : "allow",
+      "cidr_block"  = var.vpc_cidr
+      "from_port"   = 0
+      "to_port"     = 0
+      "protocol"    = "-1"
+      "rule_action" = "allow"
       "rule_number" : 100
     },
     { # Allow binding TCP for service that specify "Foreign Address" = 0.0.0.0:*
-      "cidr_block" : "0.0.0.0/0",
-      "from_port" : 0,
-      "to_port" : 65535,
-      "protocol" : "tcp",
-      "rule_action" : "allow",
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 0
+      "to_port"     = 65535
+      "protocol"    = "tcp"
+      "rule_action" = "allow"
       "rule_number" : 200
     },
     { # Allow binding UDP for service that specify "Foreign Address" = 0.0.0.0:*
-      "cidr_block" : "0.0.0.0/0",
-      "from_port" : 0,
-      "to_port" : 65535,
-      "protocol" : "udp",
-      "rule_action" : "allow",
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 0
+      "to_port"     = 65535
+      "protocol"    = "udp"
+      "rule_action" = "allow"
       "rule_number" : 300
     }
   ]
@@ -94,67 +94,67 @@ locals {
   ])
   acl_public_default = [
     { # Allow all from internal network Instances behind NAT will be permitted to go out
-      "cidr_block" : var.vpc_cidr,
-      "from_port" : 0,
-      "to_port" : 0,
-      "protocol" : "-1",
-      "rule_action" : "allow",
+      "cidr_block"  = var.vpc_cidr
+      "from_port"   = 0
+      "to_port"     = 0
+      "protocol"    = "-1"
+      "rule_action" = "allow"
       "rule_number" : 100
     },
     { # Allow HTTP Access
-      "cidr_block" : "0.0.0.0/0",
-      "from_port" : 80,
-      "to_port" : 80,
-      "protocol" : "tcp",
-      "rule_action" : "allow",
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 80
+      "to_port"     = 80
+      "protocol"    = "tcp"
+      "rule_action" = "allow"
       "rule_number" : 200
     },
     { # Allow HTTPS Access
-      "cidr_block" : "0.0.0.0/0",
-      "from_port" : 443,
-      "to_port" : 443,
-      "protocol" : "tcp",
-      "rule_action" : "allow",
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 443
+      "to_port"     = 443
+      "protocol"    = "tcp"
+      "rule_action" = "allow"
       "rule_number" : 300
     },
     { # Allow Backport binding TCP except RDP < 3389
-      "cidr_block" : "0.0.0.0/0",
-      "from_port" : 1024,
-      "to_port" : 3388,
-      "protocol" : "tcp",
-      "rule_action" : "allow",
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 1024
+      "to_port"     = 3388
+      "protocol"    = "tcp"
+      "rule_action" = "allow"
       "rule_number" : 500
     },
     { # Allow Backport binding TCP except RDP > 3389
-      "cidr_block" : "0.0.0.0/0",
-      "from_port" : 3390,
-      "to_port" : 65535,
-      "protocol" : "tcp",
-      "rule_action" : "allow",
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 3390
+      "to_port"     = 65535
+      "protocol"    = "tcp"
+      "rule_action" = "allow"
       "rule_number" : 501
     },
     { # Allow access to SMTP, specially if there are instances behind NAT
-      "cidr_block" : "0.0.0.0/0",
-      "from_port" : 465,
-      "to_port" : 465,
-      "protocol" : "tcp",
-      "rule_action" : "allow",
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 465
+      "to_port"     = 465
+      "protocol"    = "tcp"
+      "rule_action" = "allow"
       "rule_number" : 600
     },
     { # Allow access to SMTP, specially if there are instances behind NAT
-      "cidr_block" : "0.0.0.0/0",
-      "from_port" : 25,
-      "to_port" : 25,
-      "protocol" : "tcp",
-      "rule_action" : "allow",
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 25
+      "to_port"     = 25
+      "protocol"    = "tcp"
+      "rule_action" = "allow"
       "rule_number" : 700
     },
     { # Allow access to SMTP, specially if there are instances behind NAT
-      "cidr_block" : "0.0.0.0/0",
-      "from_port" : 587,
-      "to_port" : 587,
-      "protocol" : "tcp",
-      "rule_action" : "allow",
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 587
+      "to_port"     = 587
+      "protocol"    = "tcp"
+      "rule_action" = "allow"
       "rule_number" : 800
     }
     # ,
@@ -169,27 +169,35 @@ locals {
   ]
   acl_public_outbound_default = [
     { # Allow unrestricted Outbound traffic to VPC internal addresses
-      "cidr_block" : var.vpc_cidr,
-      "from_port" : 0,
-      "to_port" : 0,
-      "protocol" : "-1",
-      "rule_action" : "allow",
+      "cidr_block"  = var.vpc_cidr
+      "from_port"   = 0
+      "to_port"     = 0
+      "protocol"    = "-1"
+      "rule_action" = "allow"
       "rule_number" : 100
     },
     { # Allow Outbound traffic for ephemeral ports (NAT+NLB/ALB)
-      "cidr_block" : "0.0.0.0/0",
-      "from_port" : 1024,
-      "to_port" : 65535,
-      "protocol" : "tcp",
-      "rule_action" : "allow",
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 1024
+      "to_port"     = 3388
+      "protocol"    = "tcp"
+      "rule_action" = "allow"
       "rule_number" : 200
     },
+    { # Allow Outbound traffic for ephemeral ports (NAT+NLB/ALB)
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 3390
+      "to_port"     = 65535
+      "protocol"    = "tcp"
+      "rule_action" = "allow"
+      "rule_number" : 201
+    },
     { # Allow Outbound traffic for HTTP (NAT)
-      "cidr_block" : "0.0.0.0/0",
-      "from_port" : 80,
-      "to_port" : 80,
-      "protocol" : "tcp",
-      "rule_action" : "allow",
+      "cidr_block"  = "0.0.0.0/0"
+      "from_port"   = 80
+      "to_port"     = 80
+      "protocol"    = "tcp"
+      "rule_action" = "allow"
       "rule_number" : 300
     },
     { # Allow Outbound traffic for HTTPS (NAT)
