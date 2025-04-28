@@ -164,12 +164,7 @@ variable "internal_allow_cidrs" {
 }
 
 variable "endpoint_services" {
-  type = list(object({
-    name        = string
-    type        = optional(string, "Interface")
-    private_dns = optional(bool, true)
-    policy      = optional(bool, false)
-  }))
+  type    = any
   default = []
 }
 
