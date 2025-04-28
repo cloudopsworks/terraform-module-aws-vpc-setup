@@ -23,6 +23,9 @@ locals {
       service_type        = try(e.type, "Interface")
       private_dns_enabled = try(e.private_dns, false)
       policy              = try(e.policy, false) ? data.aws_iam_policy_document.generic_endpoint_policy.json : null
+      subnet_ids = try(e.type, "Interface") == "Interface" ? (
+        try(e.subnets, "private") == "private" ? module.vpc.private_subnets : module.vpc.intra_subnets
+      ) : null
       dns_options = try(e.type, "Interface") == "Interface" ? {
         private_dns_only_for_inbound_resolver_endpoint = try(e.dns_only_for_inbound, null)
       } : {}
@@ -64,7 +67,6 @@ module "vpc_endpoints" {
   version = "~> 5.0"
 
   vpc_id             = module.vpc.vpc_id
-  subnet_ids         = concat(module.vpc.private_subnets, module.vpc.database_subnets, module.vpc.intra_subnets)
   security_group_ids = [aws_security_group.endpoints.id]
   endpoints          = local.endpoints
   tags               = local.all_tags
