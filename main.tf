@@ -89,7 +89,7 @@ locals {
         to_port     = 3389,
         protocol    = "tcp",
         rule_action = "allow",
-        rule_number = 400 + index(var.vpn_accesses, access)
+        rule_number = 450 + index(var.vpn_accesses, access)
       }
   ])
   acl_public_default = [
