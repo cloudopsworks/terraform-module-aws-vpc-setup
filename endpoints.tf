@@ -21,10 +21,10 @@ locals {
     for e in var.endpoint_services : e.name => {
       service             = e.name
       service_type        = try(e.type, "Interface")
-      private_dns_enabled = e.private_dns
-      policy              = e.policy ? data.aws_iam_policy_document.generic_endpoint_policy.json : null
-      dns_options = e.type == "Interface" ? {
-        private_dns_only_for_inbound_resolver_endpoint = e.dns_only_for_inbound
+      private_dns_enabled = try(e.private_dns, false)
+      policy              = try(e.policy, false) ? data.aws_iam_policy_document.generic_endpoint_policy.json : null
+      dns_options = try(e.type, "Interface") == "Interface" ? {
+        private_dns_only_for_inbound_resolver_endpoint = try(e.dns_only_for_inbound, null)
       } : {}
       tags = merge(
         { Name = "${local.system_name}-${e.name}-vpc-endpoint" },
