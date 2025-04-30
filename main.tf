@@ -281,12 +281,22 @@ module "vpc" {
     }
   ]
   database_outbound_acl_rules = [
-    { # Allow all unrestricted outbound traffic for VPC network
-      "cidr_block" : var.vpc_cidr,
+    { # Allow all unrestricted outbound traffic for anywhere
+      "cidr_block" : "0.0.0.0/0",
       "from_port" : 0,
       "to_port" : 0,
       "protocol" : "-1",
       "rule_action" : "allow",
+      "rule_number" : 100
+    }
+  ]
+  default_network_acl_ingress = [
+    { # Allow all unrestricted inbound traffic for the VPC network
+      "cidr_block"  = var.vpc_cidr
+      "from_port"   = 0
+      "to_port"     = 0
+      "protocol"    = "-1"
+      "rule_action" = "allow"
       "rule_number" : 100
     }
   ]
