@@ -296,8 +296,8 @@ module "vpc" {
       "from_port"   = 0
       "to_port"     = 0
       "protocol"    = "-1"
-      "rule_action" = "allow"
-      "rule_number" : 100
+      "action" = "allow"
+      "rule_no" : 100
     }
   ]
 
