@@ -292,11 +292,11 @@ module "vpc" {
   ]
   default_network_acl_ingress = [
     { # Allow all unrestricted inbound traffic for the VPC network
-      "cidr_block"  = var.vpc_cidr
-      "from_port"   = 0
-      "to_port"     = 0
-      "protocol"    = "-1"
-      "action" = "allow"
+      "cidr_block" = var.vpc_cidr
+      "from_port"  = 0
+      "to_port"    = 0
+      "protocol"   = "-1"
+      "action"     = "allow"
       "rule_no" : 100
     }
   ]

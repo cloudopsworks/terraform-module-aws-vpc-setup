@@ -5,29 +5,35 @@
 #
 
 variable "vpc_cidr" {
-  type = string
+  description = "CIDR block for the VPC"
+  type        = string
 }
 
 variable "availability_zones" {
-  type = list(string)
+  description = "List of availability zones for the VPC"
+  type        = list(string)
 }
 
 variable "public_subnets" {
-  type = list(any)
+  description = "A list of public subnets inside the VPC"
+  type        = list(any)
 }
 
 variable "public_subnets_names" {
-  type    = list(string)
-  default = []
+  description = "A list of public subnets names inside the VPC"
+  type        = list(string)
+  default     = []
 }
 
 variable "private_subnets" {
-  type = list(any)
+  description = "A list of private subnets inside the VPC"
+  type        = list(any)
 }
 
 variable "private_subnets_names" {
-  type    = list(string)
-  default = []
+  description = "A list of private subnets names inside the VPC"
+  type        = list(string)
+  default     = []
 }
 
 # variable "forward_vpc_id" {
@@ -35,21 +41,25 @@ variable "private_subnets_names" {
 # }
 
 variable "dhcp_dns" {
-  type = list(string)
+  description = "A list of DNS servers to use for DHCP options in the VPC"
+  type        = list(string)
 }
 
 variable "dhcp_domain_name" {
-  type    = string
-  default = "sample.com"
+  description = "The domain name to use for DHCP options in the VPC"
+  type        = string
+  default     = "sample.com"
 }
 
 variable "database_subnets" {
-  type = list(string)
+  description = "A list of database subnets inside the VPC"
+  type        = list(string)
 }
 
 variable "database_subnets_names" {
-  type    = list(string)
-  default = []
+  description = "A list of database subnets names inside the VPC"
+  type        = list(string)
+  default     = []
 }
 
 variable "intra_subnets" {
@@ -59,17 +69,20 @@ variable "intra_subnets" {
 }
 
 variable "multiple_intra_route_tables" {
-  type    = bool
-  default = false
+  description = "Flag to create multiple intra route tables, if true, it will create a route table for each intra subnet"
+  type        = bool
+  default     = false
 }
 
 variable "multiple_public_route_tables" {
-  type    = bool
-  default = false
+  description = "Flag to create multiple public route tables, if true, it will create a route table for each public subnet"
+  type        = bool
+  default     = false
 }
 
 variable "create_bastion" {
-  type = bool
+  description = "Flag to create a bastion host in the VPC"
+  type        = bool
 }
 
 # variable "forward_route_cidrs" {
@@ -77,23 +90,27 @@ variable "create_bastion" {
 # }
 
 variable "vpn_accesses" {
-  type    = list(string)
-  default = []
+  description = "List of CIDR blocks for VPN access, external access, or other network access"
+  type        = list(string)
+  default     = []
 }
 
 variable "docker_version_server" {
-  type    = string
-  default = "18.09"
+  description = "Docker version to use for the server, at bastion host"
+  type        = string
+  default     = "18.09"
 }
 
 variable "extra_tags" {
-  type    = map(string)
-  default = {}
+  description = "Additional tags to apply to the VPC and its resources"
+  type        = map(string)
+  default     = {}
 }
 
 variable "flow_logs_type" {
-  type    = string
-  default = "REJECT"
+  description = "Type of flow logs to create. Options are ACCEPT, REJECT, or ALL. Default is REJECT."
+  type        = string
+  default     = "REJECT"
   validation {
     condition     = contains(["ACCEPT", "REJECT", "ALL"], var.flow_logs_type)
     error_message = "Invalid value for flow_logs_type. Must be one of ACCEPT, REJECT, or ALL"
@@ -101,31 +118,37 @@ variable "flow_logs_type" {
 }
 
 variable "single_nat_gateway" {
-  type    = bool
-  default = true
+  description = "Flag to create a single NAT gateway for the VPC. If true, only one NAT gateway will be created, otherwise one per public subnet."
+  type        = bool
+  default     = true
 }
 
 variable "intra_route_nat_gateway" {
-  type    = bool
-  default = false
+  description = "Flag to use NAT gateway for intra route tables. If true, the NAT gateway will be used for intra route tables."
+  type        = bool
+  default     = false
 }
 
 variable "enable_nat_gateway" {
-  type    = bool
-  default = true
+  description = "Flag to enable NAT gateway creation. If true, a NAT gateway will be created in the VPC."
+  type        = bool
+  default     = true
 }
 
 variable "reuse_nat_ips" {
-  type    = bool
-  default = false
+  description = "Flag to reuse existing NAT IPs. If true, it will use existing NAT IPs instead of creating new ones."
+  type        = bool
+  default     = false
 }
 
 variable "external_nat_ip_ids" {
-  type    = list(string)
-  default = []
+  description = "List of external NAT IP IDs to use if reuse_nat_ips is true. This is used to specify existing NAT IPs to reuse."
+  type        = list(string)
+  default     = []
 }
 
 variable "private_acl_rules" {
+  description = "List of inbound rules for the private network ACL"
   type = list(object({
     cidr_block  = string,
     from_port   = optional(number, 0),
@@ -137,6 +160,7 @@ variable "private_acl_rules" {
 }
 
 variable "public_outbound_rules" {
+  description = "List of outbound rules for the public network ACL"
   type = list(object({
     cidr_block  = string,
     from_port   = optional(number, 0),
@@ -148,6 +172,7 @@ variable "public_outbound_rules" {
 }
 
 variable "public_acl_rules" {
+  description = "List of inbound rules for the public network ACL"
   type = list(object({
     cidr_block  = string,
     from_port   = optional(number, 0),
@@ -159,23 +184,27 @@ variable "public_acl_rules" {
 }
 
 variable "internal_allow_cidrs" {
-  type    = list(string)
-  default = []
+  description = "List of CIDR blocks to allow internal traffic within the VPC. This is used to define which CIDRs can communicate with each other."
+  type        = list(string)
+  default     = []
 }
 
 variable "endpoint_services" {
-  type    = any
-  default = []
+  description = "List of endpoint services to create in the VPC. This is used to define which AWS services will have endpoints in the VPC."
+  type        = any
+  default     = []
 }
 
 variable "default_endpoint" {
-  type    = bool
-  default = true
+  description = "Default endpoint for the VPC. This is used to specify the default endpoint for the VPC."
+  type        = bool
+  default     = true
 }
 
 variable "secrets_manager_enabled" {
-  type    = bool
-  default = false
+  description = "Flag to enable AWS Secrets Manager for the VPC. If true, AWS Secrets Manager will be enabled for the VPC."
+  type        = bool
+  default     = false
 }
 
 variable "logs_retention" {
