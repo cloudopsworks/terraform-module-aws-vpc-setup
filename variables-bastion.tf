@@ -4,16 +4,19 @@
 #            Distributed Under Apache v2.0 License
 #
 variable "bastion_size" {
-  type    = string
-  default = "t3a.micro"
+  description = "The instance type for the bastion host. Default is 't3a.micro'."
+  type        = string
+  default     = "t3a.micro"
 }
 
 variable "bastion_storage" {
-  type    = string
-  default = "10"
+  description = "The size of the EBS volume for the bastion host in GB. Default is '10'."
+  type        = string
+  default     = "10"
 }
 
 variable "bastion_state" {
-  type    = string
-  default = "stopped"
+  description = "The state of the bastion host. Can be 'running' or 'stopped'. Default is 'stopped'."
+  type        = string
+  default     = "stopped"
 }
