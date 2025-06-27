@@ -1,7 +1,10 @@
 ##
-# (c) 2024 - Cloud Ops Works LLC - https://cloudops.works/
-#            On GitHub: https://github.com/cloudopsworks
-#            Distributed Under Apache v2.0 License
+# (c) 2021-2025
+#     Cloud Ops Works LLC - https://cloudops.works/
+#     Find us on:
+#       GitHub: https://github.com/cloudopsworks
+#       WebSite: https://cloudops.works
+#     Distributed Under Apache v2.0 License
 #
 locals {
   acl_private_default = [
@@ -292,11 +295,11 @@ module "vpc" {
   ]
   default_network_acl_ingress = [
     { # Allow all unrestricted inbound traffic for the VPC network
-      "cidr_block"  = var.vpc_cidr
-      "from_port"   = 0
-      "to_port"     = 0
-      "protocol"    = "-1"
-      "action" = "allow"
+      "cidr_block" = var.vpc_cidr
+      "from_port"  = 0
+      "to_port"    = 0
+      "protocol"   = "-1"
+      "action"     = "allow"
       "rule_no" : 100
     }
   ]
