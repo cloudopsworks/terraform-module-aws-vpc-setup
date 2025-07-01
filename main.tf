@@ -328,5 +328,7 @@ module "vpc" {
   map_public_ip_on_launch              = true
   enable_network_address_usage_metrics = true
 
+  enable_vpn_gateway = var.enable_vpn_gateway
+
   tags = local.all_tags
 }
