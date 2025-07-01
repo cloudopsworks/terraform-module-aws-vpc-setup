@@ -215,3 +215,9 @@ variable "logs_retention" {
   type        = number
   default     = 30
 }
+
+variable "enable_vpn_gateway" {
+  description = "Flag to enable VPN gateway creation. If true, a VPN gateway will be created in the VPC."
+  type        = bool
+  default     = false
+}

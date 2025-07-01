@@ -84,3 +84,11 @@ output "intra_subnets" {
 output "intra_route_table_ids" {
   value = module.vpc.intra_route_table_ids
 }
+
+output "vpn_gateway_id" {
+  value = var.enable_vpn_gateway ? module.vpc.vgw_id : null
+}
+
+output "vpn_gateway_arn" {
+  value = var.enable_vpn_gateway ? module.vpc.vgw_arn : null
+}
