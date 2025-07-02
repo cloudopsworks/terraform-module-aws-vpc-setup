@@ -244,10 +244,23 @@ locals {
       "rule_number" : 900
     }
   ]
+  acl_intra_config = [for acl_index in range(length(var.intra_acl_rules)) :
+    { # Allow SSH Access for bastion hosts
+      cidr_block  = var.intra_acl_rules[0].cidr_block,
+      from_port   = var.intra_acl_rules[0].from_port,
+      to_port     = var.intra_acl_rules[0].to_port,
+      protocol    = var.intra_acl_rules[0].protocol,
+      rule_action = var.intra_acl_rules[0].rule_action,
+      rule_number = 400 + acl_index
+    }
+  ]
+
   acl_private          = local.acl_private_default
   acl_private_outbound = local.private_outbound_acl_rules_default
   acl_public           = concat(local.acl_public_default, local.acl_public_vpn)
   acl_public_outbound  = local.acl_public_outbound_default
+  acl_intra            = concat(local.acl_private_default, local.acl_intra_config)
+  acl_intra_outbound   = local.private_outbound_acl_rules_default
 }
 
 module "vpc" {
@@ -264,6 +277,9 @@ module "vpc" {
   database_subnets                    = var.database_subnets
   database_subnet_names               = var.database_subnets_names
   intra_subnets                       = var.intra_subnets
+  intra_dedicated_network_acl         = true
+  intra_inbound_acl_rules             = local.acl_intra
+  intra_outbound_acl_rules            = local.acl_intra_outbound
   create_multiple_intra_route_tables  = var.multiple_intra_route_tables
   create_multiple_public_route_tables = var.multiple_public_route_tables
 
@@ -341,7 +357,7 @@ resource "aws_ec2_tag" "nat_gw_eni" {
         tag_key   = k
         tag_value = v
       }
-    } if (length(var.public_subnets) > 0 && var.enable_nat_gateway)
+    } if(length(var.public_subnets) > 0 && var.enable_nat_gateway)
   ]...)
   resource_id = module.vpc.natgw_interface_ids[each.value.index]
   key         = each.value.tag_key

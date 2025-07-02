@@ -221,3 +221,15 @@ variable "enable_vpn_gateway" {
   type        = bool
   default     = false
 }
+
+variable "intra_acl_rules" {
+  description = "List of inbound rules for the intra network ACL"
+  type = list(object({
+    cidr_block  = string,
+    from_port   = optional(number, 0),
+    to_port     = optional(number, 0),
+    protocol    = optional(string, "-1"),
+    rule_action = optional(string, "deny"),
+  }))
+  default = []
+}
