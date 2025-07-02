@@ -118,7 +118,7 @@ resource "aws_network_acl_rule" "db_acl_rules_out_for_internal" {
 }
 
 resource "aws_network_acl_rule" "private_acl_rules_in_for_intra" {
-  count          = length(var.internal_allow_cidrs)
+  count          = length(var.internal_allow_cidrs) * (length(var.intra_subnets) > 0 ? 1 : 0)
   network_acl_id = module.vpc.intra_network_acl_id
   rule_number    = count.index + 1500
   egress         = false
@@ -130,7 +130,7 @@ resource "aws_network_acl_rule" "private_acl_rules_in_for_intra" {
 }
 
 resource "aws_network_acl_rule" "private_acl_rules_out_for_intra" {
-  count          = length(var.internal_allow_cidrs)
+  count          = length(var.internal_allow_cidrs) * (length(var.intra_subnets) > 0 ? 1 : 0)
   network_acl_id = module.vpc.intra_network_acl_id
   rule_number    = count.index + 1500
   egress         = true
