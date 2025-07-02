@@ -332,3 +332,18 @@ module "vpc" {
 
   tags = local.all_tags
 }
+
+resource "aws_ec2_tag" "nat_gw_eni" {
+  for_each = merge([
+    for eni_index in range(var.single_nat_gateway ? 1 : length(var.public_subnets)) : {
+      for k, v in local.all_tags : "${eni_index}-${k}" => {
+        index     = eni_index
+        tag_key   = k
+        tag_value = v
+      }
+    }
+  ]...)
+  resource_id = module.vpc.natgw_interface_ids[each.value.index]
+  key         = each.value.tag_key
+  value       = each.value.tag_value
+}
