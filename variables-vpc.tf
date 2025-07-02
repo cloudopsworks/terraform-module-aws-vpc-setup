@@ -230,6 +230,7 @@ variable "intra_acl_rules" {
     to_port     = optional(number, 0),
     protocol    = optional(string, "-1"),
     rule_action = optional(string, "deny"),
+    description = optional(string, null)
   }))
   default = []
 }

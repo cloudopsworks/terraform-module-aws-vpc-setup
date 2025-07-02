@@ -251,10 +251,10 @@ locals {
       to_port     = var.intra_acl_rules[0].to_port,
       protocol    = var.intra_acl_rules[0].protocol,
       rule_action = var.intra_acl_rules[0].rule_action,
+      description = var.intra_acl_rules[0].description,
       rule_number = 400 + acl_index
     }
   ]
-
   acl_private          = local.acl_private_default
   acl_private_outbound = local.private_outbound_acl_rules_default
   acl_public           = concat(local.acl_public_default, local.acl_public_vpn)
