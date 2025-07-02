@@ -271,20 +271,6 @@ locals {
       description = "Allow Outbound traffic for DNS (NAT)"
     }
   ]
-  acl_intra_config = [for acl_index in range(length(var.intra_acl_rules)) :
-    { # Allow SSH Access for bastion hosts
-      cidr_block      = var.intra_acl_rules[0].cidr_block
-      from_port       = var.intra_acl_rules[0].from_port
-      to_port         = var.intra_acl_rules[0].to_port
-      protocol        = var.intra_acl_rules[0].protocol
-      rule_action     = var.intra_acl_rules[0].rule_action
-      description     = var.intra_acl_rules[0].description
-      ipv6_cidr_block = var.intra_acl_rules[0].ipv6_cidr_block
-      icmp_type       = var.intra_acl_rules[0].icmp_type
-      icmp_code       = var.intra_acl_rules[0].icmp_code
-      rule_number     = 400 + acl_index
-    }
-  ]
   acl_private          = local.acl_private_default
   acl_private_outbound = local.private_outbound_acl_rules_default
   acl_public           = concat(local.acl_public_default, local.acl_public_vpn)
@@ -294,9 +280,8 @@ locals {
 }
 
 module "vpc" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "~> 5.0"
-
+  source                              = "terraform-aws-modules/vpc/aws"
+  version                             = "~> 5.0"
   name                                = "vpc-${local.system_name}"
   cidr                                = var.vpc_cidr
   azs                                 = var.availability_zones

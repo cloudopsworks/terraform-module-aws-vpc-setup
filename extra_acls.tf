@@ -53,6 +53,7 @@ resource "aws_network_acl_rule" "private_acl_rules_in_for_internal" {
   rule_action    = "allow"
   from_port      = 0
   to_port        = 0
+  description    = "Allow internal traffic from ${var.internal_allow_cidrs[count.index]}"
 }
 
 resource "aws_network_acl_rule" "private_acl_rules_out_for_internal" {
@@ -65,6 +66,7 @@ resource "aws_network_acl_rule" "private_acl_rules_out_for_internal" {
   rule_action    = "allow"
   from_port      = 0
   to_port        = 0
+  description    = "Allow outgoing traffic to ${var.internal_allow_cidrs[count.index]}"
 }
 
 resource "aws_network_acl_rule" "public_acl_rules_in_for_internal" {
@@ -77,6 +79,7 @@ resource "aws_network_acl_rule" "public_acl_rules_in_for_internal" {
   rule_action    = "allow"
   from_port      = 0
   to_port        = 0
+  description    = "Allow internal traffic from ${var.internal_allow_cidrs[count.index]}"
 }
 
 resource "aws_network_acl_rule" "public_acl_rules_out_for_internal" {
@@ -89,6 +92,7 @@ resource "aws_network_acl_rule" "public_acl_rules_out_for_internal" {
   rule_action    = "allow"
   from_port      = 0
   to_port        = 0
+  description    = "Allow outgoing traffic to ${var.internal_allow_cidrs[count.index]}"
 }
 
 resource "aws_network_acl_rule" "db_acl_rules_in_for_internal" {
@@ -102,6 +106,7 @@ resource "aws_network_acl_rule" "db_acl_rules_in_for_internal" {
   rule_action    = "allow"
   from_port      = 0
   to_port        = 0
+  description    = "Allow internal traffic from ${var.internal_allow_cidrs[count.index]}"
 }
 
 resource "aws_network_acl_rule" "db_acl_rules_out_for_internal" {
@@ -115,4 +120,31 @@ resource "aws_network_acl_rule" "db_acl_rules_out_for_internal" {
   rule_action    = "allow"
   from_port      = 0
   to_port        = 0
+  description    = "Allow outgoing traffic to ${var.internal_allow_cidrs[count.index]}"
+}
+
+resource "aws_network_acl_rule" "private_acl_rules_in_for_intra" {
+  count          = length(var.internal_allow_cidrs)
+  network_acl_id = module.vpc.intra_network_acl_id
+  rule_number    = count.index + 1500
+  egress         = false
+  cidr_block     = var.internal_allow_cidrs[count.index]
+  protocol       = "-1"
+  rule_action    = "allow"
+  from_port      = 0
+  to_port        = 0
+  description    = "Allow internal traffic from ${var.internal_allow_cidrs[count.index]}"
+}
+
+resource "aws_network_acl_rule" "private_acl_rules_out_for_intra" {
+  count          = length(var.internal_allow_cidrs)
+  network_acl_id = module.vpc.intra_network_acl_id
+  rule_number    = count.index + 1500
+  egress         = true
+  cidr_block     = var.internal_allow_cidrs[count.index]
+  protocol       = "-1"
+  rule_action    = "allow"
+  from_port      = 0
+  to_port        = 0
+  description    = "Allow outgoing traffic to ${var.internal_allow_cidrs[count.index]}"
 }
