@@ -15,7 +15,6 @@ locals {
       protocol    = "-1"
       rule_action = "allow"
       rule_number = 100
-      description = "Allow all unrestricted inbound traffic for VPC network"
     },
     { # Allow Backport binding TCP Except RDP < 3389
       cidr_block  = "0.0.0.0/0"
@@ -24,7 +23,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 200
-      description = "Allow Backport binding TCP Except RDP < 3389"
     },
     { # Allow Backport binding TCP Except RDP > 3389
       cidr_block  = "0.0.0.0/0"
@@ -33,7 +31,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 201
-      description = "Allow Backport binding TCP Except RDP > 3389"
     },
     { # Allow Backport binding UDP Except RDP < 3389
       cidr_block  = "0.0.0.0/0"
@@ -42,7 +39,6 @@ locals {
       protocol    = "udp"
       rule_action = "allow"
       rule_number = 300
-      description = "Allow Backport binding UDP Except RDP < 3389"
     },
     { # Allow Backport binding UDP Except RDP > 3389
       cidr_block  = "0.0.0.0/0"
@@ -51,7 +47,6 @@ locals {
       protocol    = "udp"
       rule_action = "allow"
       rule_number = 301
-      description = "Allow Backport binding UDP Except RDP > 3389"
     }
   ]
   private_outbound_acl_rules_default = [
@@ -62,7 +57,6 @@ locals {
       protocol    = "-1"
       rule_action = "allow"
       rule_number = 100
-      description = "Allow all unrestricted outbound traffic for VPC network"
     },
     { # Allow binding TCP for service that specify Foreign Address = 0.0.0.0:*
       cidr_block  = "0.0.0.0/0"
@@ -71,7 +65,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 200
-      description = "Allow binding TCP for service that specify Foreign Address"
     },
     { # Allow binding UDP for service that specify Foreign Address = 0.0.0.0:*
       cidr_block  = "0.0.0.0/0"
@@ -80,7 +73,6 @@ locals {
       protocol    = "udp"
       rule_action = "allow"
       rule_number = 300
-      description = "Allow binding UDP for service that specify Foreign Address"
     }
   ]
   acl_public_vpn = concat([for access in var.vpn_accesses :
@@ -91,7 +83,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 400 + index(var.vpn_accesses, access)
-      description = "Allow SSH Access for bastion hosts from VPN access"
     }
     ],
     [for access in var.vpn_accesses :
@@ -102,7 +93,6 @@ locals {
         protocol    = "tcp"
         rule_action = "allow"
         rule_number = 450 + index(var.vpn_accesses, access)
-        description = "Allow RDP Access for bastion hosts from VPN access"
       }
   ])
   acl_public_default = [
@@ -113,7 +103,6 @@ locals {
       protocol    = "-1"
       rule_action = "allow"
       rule_number = 100
-      description = "Allow all from internal network Instances behind NAT will be permitted to go out"
     },
     { # Allow HTTP Access
       cidr_block  = "0.0.0.0/0"
@@ -122,7 +111,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 200
-      description = "Allow HTTP Access"
     },
     { # Allow HTTPS Access
       cidr_block  = "0.0.0.0/0"
@@ -131,7 +119,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 300
-      description = "Allow HTTPS Access"
     },
     { # Allow Backport binding TCP except RDP < 3389
       cidr_block  = "0.0.0.0/0"
@@ -140,7 +127,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 500
-      description = "Allow Backport binding TCP except RDP < 3389"
     },
     { # Allow Backport binding TCP except RDP > 3389
       cidr_block  = "0.0.0.0/0"
@@ -149,7 +135,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 501
-      description = "Allow Backport binding TCP except RDP > 3389"
     },
     { # Allow access to SMTP, specially if there are instances behind NAT
       cidr_block  = "0.0.0.0/0"
@@ -158,7 +143,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 600
-      description = "Allow access to SMTP, specially if there are instances behind NAT"
     },
     { # Allow access to SMTP, specially if there are instances behind NAT
       cidr_block  = "0.0.0.0/0"
@@ -167,7 +151,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 700
-      description = "Allow access to SMTP, specially if there are instances behind NAT"
     },
     { # Allow access to SMTP, specially if there are instances behind NAT
       cidr_block  = "0.0.0.0/0"
@@ -176,7 +159,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 800
-      description = "Allow access to SMTP, specially if there are instances behind NAT"
     }
     # ,
     # { # Allow Backport binding UDP
@@ -196,7 +178,6 @@ locals {
       protocol    = "-1"
       rule_action = "allow"
       rule_number = 100
-      description = "Allow unrestricted Outbound traffic to VPC internal addresses"
     },
     { # Allow Outbound traffic for ephemeral ports (NAT+NLB/ALB)
       cidr_block  = "0.0.0.0/0"
@@ -205,7 +186,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 200
-      description = "Allow Outbound traffic for ephemeral ports (NAT+NLB/ALB)"
     },
     { # Allow Outbound traffic for HTTP (NAT)
       cidr_block  = "0.0.0.0/0"
@@ -214,7 +194,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 300
-      description = "Allow Outbound traffic for HTTP (NAT)"
     },
     { # Allow Outbound traffic for HTTPS (NAT)
       cidr_block  = "0.0.0.0/0"
@@ -223,7 +202,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 400
-      description = "Allow Outbound traffic for HTTPS (NAT)"
     },
     { # Allow Outbound traffic for SMTPS (NAT)
       cidr_block  = "0.0.0.0/0"
@@ -232,7 +210,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 500
-      description = "Allow Outbound traffic for SMTPS (NAT)"
     },
     { # Allow Outbound traffic for SMTP (NAT)
       cidr_block  = "0.0.0.0/0"
@@ -241,7 +218,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 600
-      description = "Allow Outbound traffic for SMTP (NAT)"
     },
     { # Allow Outbound traffic for SMTPS (NAT)
       cidr_block  = "0.0.0.0/0"
@@ -250,7 +226,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 700
-      description = "Allow Outbound traffic for SMTPS (NAT)"
     },
     { # Allow Outbound traffic for DNS (NAT)
       cidr_block  = "0.0.0.0/0"
@@ -259,7 +234,6 @@ locals {
       protocol    = "tcp"
       rule_action = "allow"
       rule_number = 800
-      description = "Allow Outbound traffic for DNS (NAT)"
     },
     { # Allow Outbound traffic for DNS (NAT)
       cidr_block  = "0.0.0.0/0"
@@ -268,14 +242,13 @@ locals {
       protocol    = "udp"
       rule_action = "allow"
       rule_number = 900
-      description = "Allow Outbound traffic for DNS (NAT)"
     }
   ]
   acl_private          = local.acl_private_default
   acl_private_outbound = local.private_outbound_acl_rules_default
   acl_public           = concat(local.acl_public_default, local.acl_public_vpn)
   acl_public_outbound  = local.acl_public_outbound_default
-  acl_intra            = concat(local.acl_private_default, local.acl_intra_config)
+  acl_intra            = local.acl_private_default
   acl_intra_outbound   = local.private_outbound_acl_rules_default
 }
 
