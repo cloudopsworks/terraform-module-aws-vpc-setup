@@ -341,7 +341,7 @@ resource "aws_ec2_tag" "nat_gw_eni" {
         tag_key   = k
         tag_value = v
       }
-    }
+    } if (length(var.public_subnets) > 0 && var.enable_nat_gateway)
   ]...)
   resource_id = module.vpc.natgw_interface_ids[each.value.index]
   key         = each.value.tag_key
