@@ -35,7 +35,7 @@ module "alternat_instances" {
     {
       az                 = var.availability_zones[0]
       private_subnet_ids = concat(module.vpc.private_subnets, module.vpc.database_subnets)
-      public_subnets_id  = module.vpc.public_subnets[0]
+      public_subnet_id   = module.vpc.public_subnets[0]
       route_table_ids    = concat(module.vpc.private_route_table_ids, module.vpc.database_route_table_ids)
     },
   ]
