@@ -147,7 +147,7 @@ variable "enable_nat_instance" {
 variable "nat_instance_size" {
   description = "Instance type for the NAT instance. This is used when enable_nat_instance is true."
   type        = string
-  default     = "t4g.nano"
+  default     = "t4g.micro"
 }
 
 variable "nat_instance_spot" {
