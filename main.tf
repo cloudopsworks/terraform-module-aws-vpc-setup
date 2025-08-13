@@ -250,6 +250,8 @@ locals {
   acl_public_outbound  = local.acl_public_outbound_default
   acl_intra            = local.acl_private_default
   acl_intra_outbound   = local.private_outbound_acl_rules_default
+  use_nat_gateway      = var.enable_nat_gateway && !var.enable_nat_instance
+  use_nat_instance     = var.enable_nat_instance
 }
 
 module "vpc" {
@@ -270,7 +272,6 @@ module "vpc" {
   intra_outbound_acl_rules            = local.acl_intra_outbound
   create_multiple_intra_route_tables  = var.multiple_intra_route_tables
   create_multiple_public_route_tables = var.multiple_public_route_tables
-
 
   private_dedicated_network_acl = true
   private_inbound_acl_rules     = local.acl_private
@@ -316,7 +317,7 @@ module "vpc" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  enable_nat_gateway  = (length(var.public_subnets) > 0 && var.enable_nat_gateway)
+  enable_nat_gateway  = (length(var.public_subnets) > 0 && local.use_nat_gateway)
   single_nat_gateway  = var.single_nat_gateway
   reuse_nat_ips       = var.reuse_nat_ips
   external_nat_ip_ids = var.external_nat_ip_ids
@@ -345,7 +346,7 @@ resource "aws_ec2_tag" "nat_gw_eni" {
         tag_key   = k
         tag_value = v
       }
-    } if (length(var.public_subnets) > 0 && var.enable_nat_gateway)
+    } if(length(var.public_subnets) > 0 && local.use_nat_gateway)
   ]...)
   resource_id = module.vpc.natgw_interface_ids[each.value.index]
   key         = each.value.tag_key

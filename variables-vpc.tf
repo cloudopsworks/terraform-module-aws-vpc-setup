@@ -138,6 +138,24 @@ variable "enable_nat_gateway" {
   default     = true
 }
 
+variable "enable_nat_instance" {
+  description = "Flag to enable NAT instance creation. If true, a NAT instance will be created in the VPC. and will override enable_nat_gateway."
+  type        = bool
+  default     = false
+}
+
+variable "nat_instance_size" {
+  description = "Instance type for the NAT instance. This is used when enable_nat_instance is true."
+  type        = string
+  default     = "t4g.micro"
+}
+
+variable "nat_instance_spot" {
+  description = "Flag to use a spot instance for the NAT instance. If true, a spot instance will be used instead of an on-demand instance."
+  type        = bool
+  default     = false
+}
+
 variable "reuse_nat_ips" {
   description = "Flag to reuse existing NAT IPs. If true, it will use existing NAT IPs instead of creating new ones."
   type        = bool
