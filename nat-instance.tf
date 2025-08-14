@@ -6,8 +6,14 @@
 #       WebSite: https://cloudops.works
 #     Distributed Under Apache v2.0 License
 #
+
+data "aws_subnet" "alternat_subnet" {
+  count = length(module.vpc.private_subnets)
+  id    = module.vpc.private_subnets[count.index]
+}
+
 module "alternat_instances" {
-  count               = local.use_nat_instance ? 1 : 0
+  count               = var.high_volume_nat ? 1 : 0
   source              = "chime/alternat/aws"
   version             = "~> 0.9"
   lambda_package_type = "Zip"
@@ -32,12 +38,15 @@ module "alternat_instances" {
   nat_instance_type                     = var.nat_instance_size
   tags                                  = local.all_tags
   vpc_az_maps = [
-    {
-      az                 = var.availability_zones[0]
-      private_subnet_ids = concat(module.vpc.private_subnets, module.vpc.database_subnets)
-      public_subnet_id   = module.vpc.public_subnets[0]
-      route_table_ids    = concat(module.vpc.private_route_table_ids, module.vpc.database_route_table_ids)
-    },
+    for index, rt in module.vpc.private_route_table_ids : {
+      az               = data.aws_subnet.alternat_subnet[index].availability_zone
+      route_table_ids  = [rt]
+      public_subnet_id = module.vpc.public_subnets[index]
+      # The secondary subnets do not need to be included here. this data is
+      # used for the connectivity test function and VPC endpoint which are
+      # only needed in one subnet per zone.
+      private_subnet_ids = [module.vpc.private_subnets[index]]
+    }
   ]
   nat_instance_eip_ids = var.reuse_nat_ips ? var.external_nat_ip_ids : []
   depends_on           = [module.vpc]
