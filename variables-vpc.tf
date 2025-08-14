@@ -156,6 +156,12 @@ variable "nat_instance_size" {
   default     = "t4g.micro"
 }
 
+variable "nat_instance_allowed_cidrs" {
+  description = "List of CIDR blocks that are allowed to access the NAT instance. This is used to restrict access to the NAT instance."
+  type        = list(string)
+  default     = []
+}
+
 variable "nat_instance_spot" {
   description = "Flag to use a spot instance for the NAT instance. If true, a spot instance will be used instead of an on-demand instance."
   type        = bool

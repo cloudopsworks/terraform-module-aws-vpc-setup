@@ -18,10 +18,54 @@ data "aws_ami" "amazon_linux_2023" {
   }
 
   filter {
-    name = "architecture"
+    name   = "architecture"
     values = ["arm64"]
   }
 }
+
+resource "aws_security_group" "nat_ec2_instance" {
+  count       = local.use_nat_instance ? 1 : 0
+  name        = "nat-instance-${local.system_name}-sg"
+  description = "Security group for NAT instance access in "
+  vpc_id      = module.vpc.vpc_id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(local.all_tags, tomap({
+    "Name" = "nat-instance-${local.system_name}-sg"
+  }))
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_security_group_rule" "nat_ec2_instance_default" {
+  count             = local.use_nat_instance ? 1 : 0
+  description       = "Allow all traffic from default VPC CIDR to NAT instance"
+  security_group_id = aws_security_group.nat_ec2_instance[0].id
+  from_port         = 0
+  to_port           = 0
+  cidr_blocks       = [var.vpc_cidr]
+  protocol          = "-1"
+  type              = "ingress"
+}
+
+resource "aws_security_group_rule" "nat_ec2_instance" {
+  count             = local.use_nat_instance ? 1 : 0
+  description       = "Allow Access from allowed CIDRs to NAT instance"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  security_group_id = aws_security_group.ssh_admin.id
+  cidr_blocks       = var.nat_instance_allowed_cidrs
+  type              = "ingress"
+}
+
 
 resource "aws_eip" "nat_ec2_instance" {
   count = local.use_nat_instance ? 1 : 0
@@ -38,7 +82,7 @@ resource "aws_eip_association" "nat_ec2_instance" {
 
 resource "aws_network_interface" "nat_ec2_instance" {
   count             = local.use_nat_instance ? 1 : 0
-  security_groups   = [aws_security_group.ssh_admin.id, aws_security_group.bastion.id]
+  security_groups   = [aws_security_group.nat_ec2_instance[0].id]
   subnet_id         = module.vpc.public_subnets[0] # Use the first public subnet for NAT
   source_dest_check = false
   description       = "ENI for NAT instance nat-instance-${local.system_name}"
