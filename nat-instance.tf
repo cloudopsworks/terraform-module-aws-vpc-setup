@@ -14,7 +14,7 @@ data "aws_ami" "amazon_linux_2023" {
 
   filter {
     name   = "name"
-    values = ["al2023-ami-*-x86_64"] # Or arm64 for Graviton instances
+    values = ["al2023-ami-*"] # Or arm64 for Graviton instances
   }
 
   filter {
