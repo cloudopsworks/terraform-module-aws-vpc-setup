@@ -18,15 +18,26 @@ data "aws_ami" "amazon_linux_2023" {
   }
 }
 
+resource "aws_network_interface" "nat_ec2_instance" {
+  count = local.use_nat_instance ? 1 : 0
+
+  security_groups   = [aws_security_group.ssh_admin.id, aws_security_group.bastion.id]
+  subnet_id         = module.vpc.public_subnets[0] # Use the first public subnet for NAT
+  source_dest_check = false
+  description       = "ENI for NAT instance nat-instance-${local.system_name}"
+  tags = merge(local.all_tags, {
+    Name = "nat-instance-${local.system_name}"
+  })
+}
+
 resource "aws_instance" "nat_ec2_instance" {
-  count                  = local.use_nat_instance ? 1 : 0
-  ami                    = data.aws_ami.amazon_linux_2023[0].id
-  instance_type          = var.nat_instance_size        # Or other suitable type
-  subnet_id              = module.vpc.public_subnets[0] # Use the first public subnet for NAT
-  vpc_security_group_ids = [aws_security_group.ssh_admin.id, aws_security_group.bastion.id]
-  iam_instance_profile   = aws_iam_instance_profile.bastion.name
-  source_dest_check      = false # Essential for a NAT device
-  user_data              = <<-EOF
+  count                       = local.use_nat_instance ? 1 : 0
+  ami                         = data.aws_ami.amazon_linux_2023[0].id
+  instance_type               = var.nat_instance_size # Or other suitable type
+  iam_instance_profile        = aws_iam_instance_profile.bastion.name
+  associate_public_ip_address = true
+  source_dest_check           = false # Essential for a NAT device
+  user_data                   = <<-EOF
     #!/bin/bash
     yum install iptables-services -y
     echo "net.ipv4.ip_forward=1" >> /etc/sysctl.d/90-nat.conf
@@ -35,9 +46,15 @@ resource "aws_instance" "nat_ec2_instance" {
     iptables-save > /etc/sysconfig/iptables
   EOF
 
+  network_interface {
+    device_index         = 0
+    network_interface_id = aws_network_interface.nat_ec2_instance[0].id
+  }
+
   root_block_device {
     volume_size           = 8
     delete_on_termination = true
+    volume_type           = "gp3"
   }
 
   volume_tags = merge(local.all_tags, {
@@ -46,4 +63,25 @@ resource "aws_instance" "nat_ec2_instance" {
   tags = merge(local.all_tags, {
     Name = "nat-instance-${local.system_name}"
   })
+}
+
+resource "aws_route" "nat_instance_route_private" {
+  count                  = local.use_nat_instance ? length(module.vpc.private_route_table_ids) : 0
+  route_table_id         = element(module.vpc.private_route_table_ids, count.index)
+  destination_cidr_block = "0.0.0.0/0"
+  network_interface_id   = aws_network_interface.nat_ec2_instance[0].id
+}
+
+resource "aws_route" "nat_instance_route_database" {
+  count                  = local.use_nat_instance ? length(module.vpc.database_route_table_ids) : 0
+  route_table_id         = element(module.vpc.database_route_table_ids, count.index)
+  destination_cidr_block = "0.0.0.0/0"
+  network_interface_id   = aws_network_interface.nat_ec2_instance[0].id
+}
+
+resource "aws_route" "nat_instance_route_intra" {
+  count                  = local.use_nat_instance ? length(module.vpc.intra_route_table_ids) : 0
+  route_table_id         = element(module.vpc.intra_route_table_ids, count.index)
+  destination_cidr_block = "0.0.0.0/0"
+  network_interface_id   = aws_network_interface.nat_ec2_instance[0].id
 }
