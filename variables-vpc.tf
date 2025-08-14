@@ -144,6 +144,12 @@ variable "enable_nat_instance" {
   default     = false
 }
 
+variable "high_volume_nat" {
+  description = "Flag to create a high volume NAT instance. If true, a high volume NAT instance will be created instead of a standard NAT instance."
+  type        = bool
+  default     = false
+}
+
 variable "nat_instance_size" {
   description = "Instance type for the NAT instance. This is used when enable_nat_instance is true."
   type        = string
