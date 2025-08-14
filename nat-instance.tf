@@ -62,7 +62,7 @@ resource "aws_instance" "nat_ec2_instance" {
   }
 
   root_block_device {
-    volume_size           = 8
+    volume_size           = 30
     delete_on_termination = true
     volume_type           = "gp3"
   }
