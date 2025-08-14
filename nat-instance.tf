@@ -20,7 +20,6 @@ data "aws_ami" "amazon_linux_2023" {
 
 resource "aws_network_interface" "nat_ec2_instance" {
   count = local.use_nat_instance ? 1 : 0
-
   security_groups   = [aws_security_group.ssh_admin.id, aws_security_group.bastion.id]
   subnet_id         = module.vpc.public_subnets[0] # Use the first public subnet for NAT
   source_dest_check = false
@@ -35,7 +34,6 @@ resource "aws_instance" "nat_ec2_instance" {
   ami                         = data.aws_ami.amazon_linux_2023[0].id
   instance_type               = var.nat_instance_size # Or other suitable type
   iam_instance_profile        = aws_iam_instance_profile.bastion.name
-  associate_public_ip_address = true
   source_dest_check           = false # Essential for a NAT device
   user_data                   = <<-EOF
     #!/bin/bash
