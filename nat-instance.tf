@@ -7,9 +7,9 @@
 #     Distributed Under Apache v2.0 License
 #
 module "alternat_instances" {
+  count               = local.use_nat_instance ? 1 : 0
   source              = "chime/alternat/aws"
   version             = "~> 0.9"
-  create_nat_gateways = local.use_nat_instance
   lambda_package_type = "Zip"
   nat_instance_block_devices = {
     xvda = {
