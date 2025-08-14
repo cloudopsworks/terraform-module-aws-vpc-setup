@@ -9,7 +9,7 @@
 
 module "nat_instance" {
   count                       = local.use_nat_instance ? 1 : 0
-  source                      = "git::https://github.com/cloudopsworks/terraform-aws-nat-instance.git//?ref=v0.1.0-beta.3"
+  source                      = "git::https://github.com/cloudopsworks/terraform-aws-nat-instance.git//?ref=v0.1.0-beta.4"
   name                        = "nat-instance-${local.system_name}"
   vpc_id                      = module.vpc.vpc_id
   public_subnet               = element(module.vpc.public_subnets, 0)
