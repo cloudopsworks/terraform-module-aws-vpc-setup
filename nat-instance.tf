@@ -13,7 +13,7 @@ module "nat_instance" {
   name                        = "nat-instance-${local.system_name}"
   vpc_id                      = module.vpc.vpc_id
   public_subnet               = element(module.vpc.public_subnets, 0)
-  private_subnets_cidr_blocks = module.vpc.private_subnets_cidr_blocks
+  private_subnets_cidr_blocks = concat(module.vpc.private_subnets_cidr_blocks, var.nat_instance_allowed_cidrs)
   private_route_table_ids     = module.vpc.private_route_table_ids
 }
 
