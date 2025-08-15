@@ -33,27 +33,27 @@ snap install helm --classic
 
 apt install -y unzip postgresql-client postgresql-client-common
 
-curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.13.7/2019-06-11/bin/linux/${arch}/aws-iam-authenticator
+curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.13.7/2019-06-11/bin/linux/$arch/aws-iam-authenticator
 chmod +x /tmp/aws-iam-authenticator
 cp /tmp/aws-iam-authenticator /usr/local/bin/
 
-curl -o /tmp/terraform_1.3.3_linux_${arch}.zip https://releases.hashicorp.com/terraform/1.3.3/terraform_1.3.3_linux_${arch}.zip
+curl -o /tmp/terraform_1.3.3_linux_$arch.zip https://releases.hashicorp.com/terraform/1.3.3/terraform_1.3.3_linux_$arch.zip
 
-unzip -d /tmp /tmp/terraform_1.3.3_linux_${arch}.zip
+unzip -d /tmp /tmp/terraform_1.3.3_linux_$arch.zip
 
 chmod +x /tmp/terraform
 
 cp /tmp/terraform /usr/local/bin
 
-curl -o /tmp/tofu_1.7.7_linux_${arch}.zip https://github.com/opentofu/opentofu/releases/download/v1.7.7/tofu_1.7.7_linux_${arch}.zip
+curl -o /tmp/tofu_1.7.7_linux_$arch.zip https://github.com/opentofu/opentofu/releases/download/v1.7.7/tofu_1.7.7_linux_$arch.zip
 
-unzip -d /tmp /tmp/tofu_1.7.7_linux_${arch}.zip
+unzip -d /tmp /tmp/tofu_1.7.7_linux_$arch.zip
 
 chmod +x /tmp/tofu
 
-curl -o /tmp/terragrunt_linux_${arch} https://github.com/gruntwork-io/terragrunt/releases/download/v0.76.3/terragrunt_linux_${arch}
+curl -o /tmp/terragrunt_linux_$arch https://github.com/gruntwork-io/terragrunt/releases/download/v0.76.3/terragrunt_linux_$arch
 
-chmod +x /tmp/terragrunt_linux_${arch}
+chmod +x /tmp/terragrunt_linux_$arch
 
-cp /tmp/terragrunt_linux_${arch} /usr/local/bin/terragrunt
+cp /tmp/terragrunt_linux_$arch /usr/local/bin/terragrunt
 
