@@ -101,7 +101,7 @@ variable "vpn_accesses" {
 variable "docker_version_server" {
   description = "Docker version to use for the server, at bastion host"
   type        = string
-  default     = "18.09"
+  default     = "26.0"
 }
 
 variable "extra_tags" {

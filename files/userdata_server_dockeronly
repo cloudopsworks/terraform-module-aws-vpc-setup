@@ -5,9 +5,16 @@ export jqimage=stedolan/jq
 apt update
 
 if [ `command -v curl` ]; then
-  curl -sL https://releases.rancher.com/install-docker/${docker_version_server}.sh | sh
+  curl -fsSL https://get.docker.com -o install-docker.sh
 elif [ `command -v wget` ]; then
-  wget -qO- https://releases.rancher.com/install-docker/${docker_version_server}.sh | sh
+  wget -qO- https://get.docker.com -o install-docker.sh
+fi
+
+if [ -f install-docker.sh ]; then
+  sh install-docker.sh --version ${docker_version_server}
+else
+  echo "Docker installation script not found."
+  exit 1
 fi
 
 systemctl enable docker.service
@@ -25,10 +32,23 @@ curl -o /tmp/aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com
 chmod +x /tmp/aws-iam-authenticator
 cp /tmp/aws-iam-authenticator /usr/local/bin/
 
-curl -o /tmp/terraform_0.12.6_linux_amd64.zip https://releases.hashicorp.com/terraform/0.12.6/terraform_0.12.6_linux_amd64.zip
+curl -o /tmp/terraform_1.3.3_linux_amd64.zip https://releases.hashicorp.com/terraform/1.3.3/terraform_1.3.3_linux_amd64.zip
 
-unzip -d /tmp /tmp/terraform_0.12.6_linux_amd64.zip
+unzip -d /tmp /tmp/terraform_1.3.3_linux_amd64.zip
 
 chmod +x /tmp/terraform
 
 cp /tmp/terraform /usr/local/bin
+
+curl -o /tmp/tofu_1.7.7_linux_amd64.zip https://github.com/opentofu/opentofu/releases/download/v1.7.7/tofu_1.7.7_linux_amd64.zip
+
+unzip -d /tmp /tmp/tofu_1.7.7_linux_amd64.zip
+
+chmod +x /tmp/tofu
+
+curl -o /tmp/terragrunt_linux_arm64 https://github.com/gruntwork-io/terragrunt/releases/download/v0.76.3/terragrunt_linux_arm64
+
+chmod +x /tmp/terragrunt_linux_arm64
+
+cp /tmp/terragrunt_linux_arm64 /usr/local/bin/terragrunt
+
