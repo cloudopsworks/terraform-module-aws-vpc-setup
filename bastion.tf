@@ -6,6 +6,21 @@
 #       WebSite: https://cloudops.works
 #     Distributed Under Apache v2.0 License
 #
+
+locals {
+  bastion_map = {
+    amazon = {
+      ami_owner    = "amazon"
+      ami_name     = "al2023-ami-*"
+      default_user = "ec2-user"
+    }
+    ubuntu = {
+      ami_owner    = "099720109477" # Canonical
+      ami_name     = "ubuntu/*/ubuntu-*-24*-server-*"
+      default_user = "ubuntu"
+    }
+  }
+}
 resource "tls_private_key" "keypair_gen_bastion" {
   count     = var.create_bastion ? 1 : 0
   algorithm = "RSA"
@@ -29,11 +44,11 @@ resource "aws_key_pair" "bastion_key" {
 
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["099720109477"] # Canonical
+  owners      = [local.bastion_map[var.bastion_vendor].ami_owner] # Canonical
 
   filter {
     name   = "name"
-    values = ["ubuntu/*/ubuntu-*-24*-server-*"]
+    values = [local.bastion_map[var.bastion_vendor].ami_name]
   }
 
   filter {

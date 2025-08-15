@@ -251,9 +251,3 @@ variable "enable_vpn_gateway" {
   type        = bool
   default     = false
 }
-
-variable "devops_accelerator" {
-  description = "Flag to enable DevOps Accelerator features. If true, additional resources and configurations for DevOps Accelerator will be applied."
-  type        = bool
-  default     = false
-}

@@ -46,6 +46,13 @@ resource "aws_ssm_parameter" "tronador_accelerate_bastion_instance" {
   value = aws_instance.bastion_server[0].id
 }
 
+resource "aws_ssm_parameter" "tronador_accelerate_bastion_instance_user" {
+  count = var.create_bastion && var.secrets_manager_enabled && var.devops_accelerator ? 1 : 0
+  name  = "/cloudopsworks/tronador/bastion/${var.spoke_def}/instance-id"
+  type  = "String"
+  value = local.bastion_map[var.bastion_vendor].default_user
+}
+
 resource "aws_ssm_parameter" "tronador_accelerate_bastion_instance_sg" {
   count = var.create_bastion && var.secrets_manager_enabled && var.devops_accelerator ? 1 : 0
   name  = "/cloudopsworks/tronador/bastion/${var.spoke_def}/security-group-id"
