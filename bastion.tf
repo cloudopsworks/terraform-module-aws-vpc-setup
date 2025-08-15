@@ -7,22 +7,19 @@
 #     Distributed Under Apache v2.0 License
 #
 resource "tls_private_key" "keypair_gen_bastion" {
-  count = var.create_bastion ? 1 : 0
-
+  count     = var.create_bastion ? 1 : 0
   algorithm = "RSA"
   rsa_bits  = "4096"
 }
 
 resource "local_file" "keypair_priv_bastion" {
-  count = var.create_bastion ? 1 : 0
-
+  count    = var.create_bastion ? 1 : 0
   content  = tls_private_key.keypair_gen_bastion[count.index].private_key_pem
   filename = "pem-files/key-${local.system_name}-${local.region}.pem"
 }
 
 resource "aws_key_pair" "bastion_key" {
-  count = var.create_bastion ? 1 : 0
-
+  count      = var.create_bastion ? 1 : 0
   key_name   = "key/bastion-${local.system_name}"
   public_key = tls_private_key.keypair_gen_bastion[count.index].public_key_openssh
   tags = merge(local.all_tags, {
@@ -76,6 +73,7 @@ resource "aws_instance" "bastion_server" {
   root_block_device {
     volume_size           = var.bastion_storage
     delete_on_termination = true
+    volume_type           = "gp3"
   }
 
   lifecycle {
