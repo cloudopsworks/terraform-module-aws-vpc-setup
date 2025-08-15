@@ -36,12 +36,12 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["ubuntu-*-24.04-amd64-server-*"]
+    values = ["ubuntu/*/ubuntu-*-24-*server-*"]
   }
 
   filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
+    name   = "architecture"
+    values = [strcontains(var.bastion_size, "t4g") ? "arm64" : "x86_64"]
   }
 }
 
