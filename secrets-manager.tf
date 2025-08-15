@@ -32,9 +32,23 @@ resource "aws_secretsmanager_secret_version" "bastion_private_key" {
   secret_string = tls_private_key.keypair_gen_bastion[count.index].private_key_pem
 }
 
-resource "aws_ssm_parameter" "tronador_accelerate_bastion" {
+resource "aws_ssm_parameter" "tronador_accelerate_bastion_key" {
   count = var.create_bastion && var.secrets_manager_enabled && var.devops_accelerator ? 1 : 0
-  name  = "/cloudopsworks/tronador/bastion-key/${var.spoke_def}/secret-name"
+  name  = "/cloudopsworks/tronador/bastion/${var.spoke_def}/key-secret-name"
   type  = "String"
   value = aws_secretsmanager_secret.bastion_private_key.name
+}
+
+resource "aws_ssm_parameter" "tronador_accelerate_bastion_instance" {
+  count = var.create_bastion && var.secrets_manager_enabled && var.devops_accelerator ? 1 : 0
+  name  = "/cloudopsworks/tronador/bastion/${var.spoke_def}/instance-id"
+  type  = "String"
+  value = aws_instance.bastion_server.id
+}
+
+resource "aws_ssm_parameter" "tronador_accelerate_bastion_instance" {
+  count = var.create_bastion && var.secrets_manager_enabled && var.devops_accelerator ? 1 : 0
+  name  = "/cloudopsworks/tronador/bastion/${var.spoke_def}/security-group-id"
+  type  = "String"
+  value = aws_security_group.bastion.id
 }
