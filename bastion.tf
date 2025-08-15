@@ -33,7 +33,7 @@ data "aws_ami" "ubuntu" {
 
   filter {
     name   = "name"
-    values = ["ubuntu/*/ubuntu-*-24-*server-*"]
+    values = ["ubuntu/*/ubuntu-*-24*-server-*"]
   }
 
   filter {
