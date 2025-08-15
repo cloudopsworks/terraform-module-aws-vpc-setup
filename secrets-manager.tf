@@ -48,7 +48,7 @@ resource "aws_ssm_parameter" "tronador_accelerate_bastion_instance" {
 
 resource "aws_ssm_parameter" "tronador_accelerate_bastion_instance_user" {
   count = var.create_bastion && var.secrets_manager_enabled && var.devops_accelerator ? 1 : 0
-  name  = "/cloudopsworks/tronador/bastion/${var.spoke_def}/instance-id"
+  name  = "/cloudopsworks/tronador/bastion/${var.spoke_def}/instance-user"
   type  = "String"
   value = local.bastion_map[var.bastion_vendor].default_user
 }
