@@ -31,3 +31,10 @@ resource "aws_secretsmanager_secret_version" "bastion_private_key" {
   secret_id     = aws_secretsmanager_secret.bastion_private_key[count.index].id
   secret_string = tls_private_key.keypair_gen_bastion[count.index].private_key_pem
 }
+
+resource "aws_ssm_parameter" "tronador_accelerate_bastion" {
+  count = var.create_bastion && var.secrets_manager_enabled && var.enable_accelerator ? 1 : 0
+  name  = "/cloudopsworks/tronador/bastion-key/${var.spoke_def}/secret-name"
+  type  = "String"
+  value = aws_secretsmanager_secret.bastion_private_key.name
+}
