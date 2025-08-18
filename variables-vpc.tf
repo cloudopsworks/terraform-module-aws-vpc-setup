@@ -101,7 +101,7 @@ variable "vpn_accesses" {
 variable "docker_version_server" {
   description = "Docker version to use for the server, at bastion host"
   type        = string
-  default     = "18.09"
+  default     = "26.0"
 }
 
 variable "extra_tags" {
@@ -154,6 +154,12 @@ variable "nat_instance_size" {
   description = "Instance type for the NAT instance. This is used when enable_nat_instance is true."
   type        = string
   default     = "t4g.micro"
+}
+
+variable "nat_instance_allowed_cidrs" {
+  description = "List of CIDR blocks that are allowed to access the NAT instance. This is used to restrict access to the NAT instance."
+  type        = list(string)
+  default     = []
 }
 
 variable "nat_instance_spot" {

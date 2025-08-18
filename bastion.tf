@@ -6,23 +6,35 @@
 #       WebSite: https://cloudops.works
 #     Distributed Under Apache v2.0 License
 #
-resource "tls_private_key" "keypair_gen_bastion" {
-  count = var.create_bastion ? 1 : 0
 
+locals {
+  bastion_map = {
+    amazon = {
+      ami_owner    = "amazon"
+      ami_name     = "al2023-ami-*"
+      default_user = "ec2-user"
+    }
+    ubuntu = {
+      ami_owner    = "099720109477" # Canonical
+      ami_name     = "ubuntu/*/ubuntu-*-24*-server-*"
+      default_user = "ubuntu"
+    }
+  }
+}
+resource "tls_private_key" "keypair_gen_bastion" {
+  count     = var.create_bastion ? 1 : 0
   algorithm = "RSA"
   rsa_bits  = "4096"
 }
 
 resource "local_file" "keypair_priv_bastion" {
-  count = var.create_bastion ? 1 : 0
-
+  count    = var.create_bastion ? 1 : 0
   content  = tls_private_key.keypair_gen_bastion[count.index].private_key_pem
   filename = "pem-files/key-${local.system_name}-${local.region}.pem"
 }
 
 resource "aws_key_pair" "bastion_key" {
-  count = var.create_bastion ? 1 : 0
-
+  count      = var.create_bastion ? 1 : 0
   key_name   = "key/bastion-${local.system_name}"
   public_key = tls_private_key.keypair_gen_bastion[count.index].public_key_openssh
   tags = merge(local.all_tags, {
@@ -32,16 +44,16 @@ resource "aws_key_pair" "bastion_key" {
 
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["099720109477"] # Canonical
+  owners      = [local.bastion_map[var.bastion_vendor].ami_owner] # Canonical
 
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-*-20.04-amd64-server-*"]
+    values = [local.bastion_map[var.bastion_vendor].ami_name]
   }
 
   filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
+    name   = "architecture"
+    values = [strcontains(var.bastion_size, "t4g") ? "arm64" : "x86_64"]
   }
 }
 
@@ -76,6 +88,7 @@ resource "aws_instance" "bastion_server" {
   root_block_device {
     volume_size           = var.bastion_storage
     delete_on_termination = true
+    volume_type           = "gp3"
   }
 
   lifecycle {
