@@ -23,3 +23,19 @@ variable "bastion_state" {
   type        = string
   default     = "stopped"
 }
+
+variable "devops_accelerator" {
+  description = "Flag to enable DevOps Accelerator features. If true, additional resources and configurations for DevOps Accelerator will be applied."
+  type        = bool
+  default     = false
+}
+
+variable "bastion_vendor" {
+  description = "The vendor for the bastion host. Default is 'ubuntu'."
+  type        = string
+  default     = "ubuntu"
+  validation {
+    condition     = contains(["ubuntu", "amazon", "centos", "rhel"], var.bastion_vendor)
+    error_message = "The bastion_vendor must be one of 'ubuntu', 'amazon', 'centos', or 'rhel'."
+  }
+}
