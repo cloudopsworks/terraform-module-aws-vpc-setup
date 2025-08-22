@@ -30,7 +30,6 @@ module "nat_instance" {
 
 resource "aws_eip" "nat_ec2_instance" {
   count             = local.use_nat_instance ? 1 : 0
-  network_interface = module.nat_instance[0].eni_id
   tags = merge(local.all_tags, {
     Name = "nat-instance-eip-${local.system_name}"
   })
