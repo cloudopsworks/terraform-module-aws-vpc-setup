@@ -17,7 +17,7 @@ module "nat_instance" {
   use_cloudwatch_agent = true
   update_route_tables  = true
   instance_type        = var.nat_instance_size
-  route_table_ids = merge({
+  route_tables_ids = merge({
     for rtb in module.vpc.private_route_table_ids : "private-${rtb}" => rtb
     }, {
     for rtb in module.vpc.intra_route_table_ids : "intra-${rtb}" => rtb
