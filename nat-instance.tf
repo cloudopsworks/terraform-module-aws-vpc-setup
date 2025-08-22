@@ -16,6 +16,7 @@ module "nat_instance" {
   eip_allocation_ids   = [aws_eip.nat_ec2_instance[0].id]
   use_cloudwatch_agent = true
   update_route_tables  = true
+  use_spot_instances   = try(var.nat_instance_spot, false)
   instance_type        = var.nat_instance_size
   route_tables_ids = merge({
     for rtb in module.vpc.private_route_table_ids : "private-${rtb}" => rtb
