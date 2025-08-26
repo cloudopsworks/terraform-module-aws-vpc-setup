@@ -17,3 +17,7 @@ output "bastion_public_address" {
 output "bastion_public_ip" {
   value = aws_instance.bastion_server.*.public_ip
 }
+
+output "bastion_ssm_parameter" {
+  value = var.create_bastion && var.secrets_manager_enabled && var.devops_accelerator ? aws_ssm_parameter.tronador_accelerate_bastion_instance[0].name : null
+}
