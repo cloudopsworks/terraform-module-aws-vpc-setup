@@ -58,6 +58,10 @@ output "public_route_table_ids" {
   value = module.vpc.public_route_table_ids
 }
 
+output "public_network_acl_id" {
+  value = module.vpc.public_network_acl_id
+}
+
 output "database_route_table_ids" {
   value = module.vpc.database_route_table_ids
 }

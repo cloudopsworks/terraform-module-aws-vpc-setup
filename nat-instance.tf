@@ -30,7 +30,7 @@ module "nat_instance" {
 }
 
 resource "aws_eip" "nat_ec2_instance" {
-  count             = local.use_nat_instance ? 1 : 0
+  count = local.use_nat_instance ? 1 : 0
   tags = merge(local.all_tags, {
     Name = "nat-instance-eip-${local.system_name}"
   })
