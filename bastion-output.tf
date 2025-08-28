@@ -21,3 +21,19 @@ output "bastion_public_ip" {
 output "bastion_ssm_parameter" {
   value = var.create_bastion && var.secrets_manager_enabled && var.devops_accelerator ? aws_ssm_parameter.tronador_accelerate_bastion_instance[0].name : null
 }
+
+output "bastion_ssm_parameter_user" {
+  value = var.create_bastion && var.secrets_manager_enabled && var.devops_accelerator ? aws_ssm_parameter.tronador_accelerate_bastion_instance_user[0].name : null
+}
+
+output "bastion_ssm_parameter_bastion_key" {
+  value = var.create_bastion && var.secrets_manager_enabled && var.devops_accelerator ? aws_ssm_parameter.tronador_accelerate_bastion_key[0].name : null
+}
+
+output "bastion_private_key_secret" {
+  value = var.create_bastion && var.secrets_manager_enabled ? aws_secretsmanager_secret.bastion_private_key[0].name : null
+}
+
+output "bastion_private_key_secret_arn" {
+  value = var.create_bastion && var.secrets_manager_enabled ? aws_secretsmanager_secret.bastion_private_key[0].arn : null
+}
