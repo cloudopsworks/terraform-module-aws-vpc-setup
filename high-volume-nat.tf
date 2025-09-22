@@ -8,7 +8,7 @@
 #
 
 data "aws_subnet" "alternat_subnet" {
-  count = length(module.vpc.private_subnets)
+  count = length(var.private_subnets)
   id    = module.vpc.private_subnets[count.index]
 }
 
