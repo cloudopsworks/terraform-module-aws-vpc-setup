@@ -80,7 +80,7 @@ resource "aws_instance" "bastion_server" {
   instance_type          = var.bastion_size
   key_name               = aws_key_pair.bastion_key[count.index].key_name
   vpc_security_group_ids = [aws_security_group.ssh_admin.id, aws_security_group.bastion.id]
-  user_data              = data.cloudinit_config.prometheus_server_cloudinit.rendered
+  user_data_base64       = data.cloudinit_config.prometheus_server_cloudinit.rendered
   subnet_id              = module.vpc.public_subnets[0]
   source_dest_check      = true
   iam_instance_profile   = aws_iam_instance_profile.bastion.name
