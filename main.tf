@@ -256,7 +256,7 @@ locals {
 
 module "vpc" {
   source                              = "terraform-aws-modules/vpc/aws"
-  version                             = "~> 5.0"
+  version                             = "~> 6.0"
   name                                = "vpc-${local.system_name}"
   cidr                                = var.vpc_cidr
   azs                                 = var.availability_zones
@@ -330,7 +330,7 @@ module "vpc" {
   dhcp_options_domain_name = var.dhcp_domain_name
   #dhcp_options_domain_name_servers = var.dhcp_dns
 
-  map_public_ip_on_launch              = true
+  map_public_ip_on_launch              = var.enable_public_ip_on_launch
   enable_network_address_usage_metrics = true
 
   enable_vpn_gateway = var.enable_vpn_gateway
