@@ -257,9 +257,3 @@ variable "enable_public_ip_on_launch" {
   type        = bool
   default     = false
 }
-
-variable "enable_public_ip_on_launch" {
-  description = "Flag to enable public IPs for instances launched in the public subnets. If true, instances launched in the public subnets will receive a public IP."
-  type        = bool
-  default     = false
-}
