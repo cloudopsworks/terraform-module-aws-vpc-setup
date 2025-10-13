@@ -194,13 +194,13 @@ Available targets:
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.4 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.100.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.16.0 |
 | <a name="provider_cloudinit"></a> [cloudinit](#provider\_cloudinit) | 2.3.7 |
 | <a name="provider_local"></a> [local](#provider\_local) | 2.5.3 |
 | <a name="provider_tls"></a> [tls](#provider\_tls) | 4.1.0 |
@@ -210,8 +210,9 @@ Available targets:
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_alternat_instances"></a> [alternat\_instances](#module\_alternat\_instances) | chime/alternat/aws | ~> 0.9 |
+| <a name="module_nat_instance"></a> [nat\_instance](#module\_nat\_instance) | git::https://github.com/cloudopsworks/terraform-aws-fck-nat.git// | main |
 | <a name="module_tags"></a> [tags](#module\_tags) | cloudopsworks/tags/local | 1.0.9 |
-| <a name="module_vpc"></a> [vpc](#module\_vpc) | terraform-aws-modules/vpc/aws | ~> 5.0 |
+| <a name="module_vpc"></a> [vpc](#module\_vpc) | terraform-aws-modules/vpc/aws | ~> 6.0 |
 | <a name="module_vpc_endpoints"></a> [vpc\_endpoints](#module\_vpc\_endpoints) | terraform-aws-modules/vpc/aws//modules/vpc-endpoints | ~> 5.0 |
 
 ## Resources
@@ -221,6 +222,7 @@ Available targets:
 | [aws_cloudwatch_log_group.log_group](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
 | [aws_ec2_instance_state.bastion_server](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ec2_instance_state) | resource |
 | [aws_ec2_tag.nat_gw_eni](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ec2_tag) | resource |
+| [aws_eip.nat_ec2_instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eip) | resource |
 | [aws_flow_log.flow_logs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/flow_log) | resource |
 | [aws_iam_instance_profile.bastion](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
 | [aws_iam_role.bastion](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
@@ -250,11 +252,16 @@ Available targets:
 | [aws_security_group_rule.endpoints_ingress](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.ssh-admin-ingress-vpn](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.ssh-admin-local](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
+| [aws_ssm_parameter.tronador_accelerate_bastion_instance](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.tronador_accelerate_bastion_instance_sg](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.tronador_accelerate_bastion_instance_user](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.tronador_accelerate_bastion_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
 | [local_file.keypair_priv_bastion](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [tls_private_key.keypair_gen_bastion](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) | resource |
 | [aws_ami.ubuntu](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
 | [aws_iam_policy_document.generic_endpoint_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
+| [aws_subnet.alternat_subnet](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
 | [cloudinit_config.prometheus_server_cloudinit](https://registry.terraform.io/providers/hashicorp/cloudinit/latest/docs/data-sources/config) | data source |
 
 ## Inputs
@@ -265,20 +272,24 @@ Available targets:
 | <a name="input_bastion_size"></a> [bastion\_size](#input\_bastion\_size) | The instance type for the bastion host. Default is 't3a.micro'. | `string` | `"t3a.micro"` | no |
 | <a name="input_bastion_state"></a> [bastion\_state](#input\_bastion\_state) | The state of the bastion host. Can be 'running' or 'stopped'. Default is 'stopped'. | `string` | `"stopped"` | no |
 | <a name="input_bastion_storage"></a> [bastion\_storage](#input\_bastion\_storage) | The size of the EBS volume for the bastion host in GB. Default is '10'. | `string` | `"10"` | no |
+| <a name="input_bastion_vendor"></a> [bastion\_vendor](#input\_bastion\_vendor) | The vendor for the bastion host. Default is 'ubuntu'. | `string` | `"ubuntu"` | no |
 | <a name="input_create_bastion"></a> [create\_bastion](#input\_create\_bastion) | Flag to create a bastion host in the VPC | `bool` | n/a | yes |
 | <a name="input_database_subnets"></a> [database\_subnets](#input\_database\_subnets) | A list of database subnets inside the VPC | `list(string)` | n/a | yes |
 | <a name="input_database_subnets_names"></a> [database\_subnets\_names](#input\_database\_subnets\_names) | A list of database subnets names inside the VPC | `list(string)` | `[]` | no |
 | <a name="input_default_endpoint"></a> [default\_endpoint](#input\_default\_endpoint) | Default endpoint for the VPC. This is used to specify the default endpoint for the VPC. | `bool` | `true` | no |
+| <a name="input_devops_accelerator"></a> [devops\_accelerator](#input\_devops\_accelerator) | Flag to enable DevOps Accelerator features. If true, additional resources and configurations for DevOps Accelerator will be applied. | `bool` | `false` | no |
 | <a name="input_dhcp_dns"></a> [dhcp\_dns](#input\_dhcp\_dns) | A list of DNS servers to use for DHCP options in the VPC | `list(string)` | n/a | yes |
 | <a name="input_dhcp_domain_name"></a> [dhcp\_domain\_name](#input\_dhcp\_domain\_name) | The domain name to use for DHCP options in the VPC | `string` | `"sample.com"` | no |
-| <a name="input_docker_version_server"></a> [docker\_version\_server](#input\_docker\_version\_server) | Docker version to use for the server, at bastion host | `string` | `"18.09"` | no |
+| <a name="input_docker_version_server"></a> [docker\_version\_server](#input\_docker\_version\_server) | Docker version to use for the server, at bastion host | `string` | `"26.0"` | no |
 | <a name="input_enable_nat_gateway"></a> [enable\_nat\_gateway](#input\_enable\_nat\_gateway) | Flag to enable NAT gateway creation. If true, a NAT gateway will be created in the VPC. | `bool` | `true` | no |
 | <a name="input_enable_nat_instance"></a> [enable\_nat\_instance](#input\_enable\_nat\_instance) | Flag to enable NAT instance creation. If true, a NAT instance will be created in the VPC. and will override enable\_nat\_gateway. | `bool` | `false` | no |
+| <a name="input_enable_public_ip_on_launch"></a> [enable\_public\_ip\_on\_launch](#input\_enable\_public\_ip\_on\_launch) | Flag to enable public IPs for instances launched in the public subnets. If true, instances launched in the public subnets will receive a public IP. | `bool` | `false` | no |
 | <a name="input_enable_vpn_gateway"></a> [enable\_vpn\_gateway](#input\_enable\_vpn\_gateway) | Flag to enable VPN gateway creation. If true, a VPN gateway will be created in the VPC. | `bool` | `false` | no |
 | <a name="input_endpoint_services"></a> [endpoint\_services](#input\_endpoint\_services) | List of endpoint services to create in the VPC. This is used to define which AWS services will have endpoints in the VPC. | `any` | `[]` | no |
 | <a name="input_external_nat_ip_ids"></a> [external\_nat\_ip\_ids](#input\_external\_nat\_ip\_ids) | List of external NAT IP IDs to use if reuse\_nat\_ips is true. This is used to specify existing NAT IPs to reuse. | `list(string)` | `[]` | no |
 | <a name="input_extra_tags"></a> [extra\_tags](#input\_extra\_tags) | Additional tags to apply to the VPC and its resources | `map(string)` | `{}` | no |
 | <a name="input_flow_logs_type"></a> [flow\_logs\_type](#input\_flow\_logs\_type) | Type of flow logs to create. Options are ACCEPT, REJECT, or ALL. Default is REJECT. | `string` | `"REJECT"` | no |
+| <a name="input_high_volume_nat"></a> [high\_volume\_nat](#input\_high\_volume\_nat) | Flag to create a high volume NAT instance. If true, a high volume NAT instance will be created instead of a standard NAT instance. | `bool` | `false` | no |
 | <a name="input_internal_allow_cidrs"></a> [internal\_allow\_cidrs](#input\_internal\_allow\_cidrs) | List of CIDR blocks to allow internal traffic within the VPC. This is used to define which CIDRs can communicate with each other. | `list(string)` | `[]` | no |
 | <a name="input_intra_route_nat_gateway"></a> [intra\_route\_nat\_gateway](#input\_intra\_route\_nat\_gateway) | Flag to use NAT gateway for intra route tables. If true, the NAT gateway will be used for intra route tables. | `bool` | `false` | no |
 | <a name="input_intra_subnets"></a> [intra\_subnets](#input\_intra\_subnets) | A list of intra subnets inside the VPC | `list(string)` | `[]` | no |
@@ -286,6 +297,7 @@ Available targets:
 | <a name="input_logs_retention"></a> [logs\_retention](#input\_logs\_retention) | CloudWatch Logs retention in days | `number` | `30` | no |
 | <a name="input_multiple_intra_route_tables"></a> [multiple\_intra\_route\_tables](#input\_multiple\_intra\_route\_tables) | Flag to create multiple intra route tables, if true, it will create a route table for each intra subnet | `bool` | `false` | no |
 | <a name="input_multiple_public_route_tables"></a> [multiple\_public\_route\_tables](#input\_multiple\_public\_route\_tables) | Flag to create multiple public route tables, if true, it will create a route table for each public subnet | `bool` | `false` | no |
+| <a name="input_nat_instance_allowed_cidrs"></a> [nat\_instance\_allowed\_cidrs](#input\_nat\_instance\_allowed\_cidrs) | List of CIDR blocks that are allowed to access the NAT instance. This is used to restrict access to the NAT instance. | `list(string)` | `[]` | no |
 | <a name="input_nat_instance_size"></a> [nat\_instance\_size](#input\_nat\_instance\_size) | Instance type for the NAT instance. This is used when enable\_nat\_instance is true. | `string` | `"t4g.micro"` | no |
 | <a name="input_nat_instance_spot"></a> [nat\_instance\_spot](#input\_nat\_instance\_spot) | Flag to use a spot instance for the NAT instance. If true, a spot instance will be used instead of an on-demand instance. | `bool` | `false` | no |
 | <a name="input_org"></a> [org](#input\_org) | n/a | <pre>object({<br/>    organization_name = string<br/>    organization_unit = string<br/>    environment_type  = string<br/>    environment_name  = string<br/>  })</pre> | n/a | yes |
@@ -308,9 +320,14 @@ Available targets:
 | Name | Description |
 |------|-------------|
 | <a name="output_bastion_key"></a> [bastion\_key](#output\_bastion\_key) | # (c) 2021-2025 Cloud Ops Works LLC - https://cloudops.works/ Find us on: GitHub: https://github.com/cloudopsworks WebSite: https://cloudops.works Distributed Under Apache v2.0 License |
+| <a name="output_bastion_private_key_secret"></a> [bastion\_private\_key\_secret](#output\_bastion\_private\_key\_secret) | n/a |
+| <a name="output_bastion_private_key_secret_arn"></a> [bastion\_private\_key\_secret\_arn](#output\_bastion\_private\_key\_secret\_arn) | n/a |
 | <a name="output_bastion_public_address"></a> [bastion\_public\_address](#output\_bastion\_public\_address) | n/a |
 | <a name="output_bastion_public_ip"></a> [bastion\_public\_ip](#output\_bastion\_public\_ip) | n/a |
 | <a name="output_bastion_security_group_id"></a> [bastion\_security\_group\_id](#output\_bastion\_security\_group\_id) | n/a |
+| <a name="output_bastion_ssm_parameter"></a> [bastion\_ssm\_parameter](#output\_bastion\_ssm\_parameter) | n/a |
+| <a name="output_bastion_ssm_parameter_bastion_key"></a> [bastion\_ssm\_parameter\_bastion\_key](#output\_bastion\_ssm\_parameter\_bastion\_key) | n/a |
+| <a name="output_bastion_ssm_parameter_user"></a> [bastion\_ssm\_parameter\_user](#output\_bastion\_ssm\_parameter\_user) | n/a |
 | <a name="output_cloudwatch_log_group"></a> [cloudwatch\_log\_group](#output\_cloudwatch\_log\_group) | n/a |
 | <a name="output_database_route_table_ids"></a> [database\_route\_table\_ids](#output\_database\_route\_table\_ids) | n/a |
 | <a name="output_database_subnet_group"></a> [database\_subnet\_group](#output\_database\_subnet\_group) | n/a |
@@ -322,6 +339,7 @@ Available targets:
 | <a name="output_nat_address"></a> [nat\_address](#output\_nat\_address) | n/a |
 | <a name="output_private_route_table_ids"></a> [private\_route\_table\_ids](#output\_private\_route\_table\_ids) | n/a |
 | <a name="output_private_subnets"></a> [private\_subnets](#output\_private\_subnets) | n/a |
+| <a name="output_public_network_acl_id"></a> [public\_network\_acl\_id](#output\_public\_network\_acl\_id) | n/a |
 | <a name="output_public_route_table_ids"></a> [public\_route\_table\_ids](#output\_public\_route\_table\_ids) | n/a |
 | <a name="output_public_subnets"></a> [public\_subnets](#output\_public\_subnets) | n/a |
 | <a name="output_ssh_admin_security_group_id"></a> [ssh\_admin\_security\_group\_id](#output\_ssh\_admin\_security\_group\_id) | n/a |
