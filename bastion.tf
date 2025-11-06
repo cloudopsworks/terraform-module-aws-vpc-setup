@@ -161,6 +161,13 @@ data "aws_iam_policy_document" "extra_bastion_permissions" {
       effect    = try(statement.value.effect, "Allow")
       actions   = statement.value.actions
       resources = statement.value.resources
+      dynamic "principals" {
+        for_each = toset(try(statement.value.principals, []))
+        content {
+          type        = principals.value.type
+          identifiers = principals.value.identifiers
+        }
+      }
       dynamic "condition" {
         for_each = toset(try(statement.value.condition, []))
         content {
