@@ -40,7 +40,7 @@ variable "bastion_vendor" {
   }
 }
 
-variable "bastion_extra_iam_permissions" {
+variable "bastion_extra_iam" {
   description = "A list of additional IAM permissions to attach to the bastion host's IAM role."
   type        = any
   default     = []

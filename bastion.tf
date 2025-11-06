@@ -153,9 +153,9 @@ resource "aws_iam_role_policy_attachment" "bastion_ssm" {
 }
 
 data "aws_iam_policy_document" "extra_bastion_permissions" {
-  count = length(try(var.bastion_extra_iam_permissions, [])) > 0 ? 1 : 0
+  count = length(try(var.bastion_extra_iam, [])) > 0 ? 1 : 0
   dynamic "statement" {
-    for_each = toset(try(var.bastion_extra_iam_permissions, []))
+    for_each = toset(try(var.bastion_extra_iam, []))
     content {
       effect    = try(statement.value.effect, "Allow")
       actions   = statement.value.actions
@@ -174,7 +174,7 @@ data "aws_iam_policy_document" "extra_bastion_permissions" {
 }
 
 resource "aws_iam_role_policy" "extra_bastion_permissions" {
-  count  = length(try(var.bastion_extra_iam_permissions, [])) > 0 ? 1 : 0
+  count  = length(try(var.bastion_extra_iam, [])) > 0 ? 1 : 0
   policy = data.aws_iam_policy_document.extra_bastion_permissions.json
   role   = aws_iam_role.bastion.name
 }
