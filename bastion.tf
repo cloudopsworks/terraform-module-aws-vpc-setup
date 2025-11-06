@@ -151,3 +151,38 @@ resource "aws_iam_role_policy_attachment" "bastion_ssm" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   role       = aws_iam_role.bastion.name
 }
+
+data "aws_iam_policy_document" "extra_bastion_permissions" {
+  count = length(try(var.bastion_extra_iam, [])) > 0 ? 1 : 0
+  dynamic "statement" {
+    for_each = toset(try(var.bastion_extra_iam, []))
+    content {
+      sid       = try(statement.value.sid, null)
+      effect    = try(statement.value.effect, "Allow")
+      actions   = statement.value.actions
+      resources = statement.value.resources
+      dynamic "principals" {
+        for_each = toset(try(statement.value.principals, []))
+        content {
+          type        = principals.value.type
+          identifiers = principals.value.identifiers
+        }
+      }
+      dynamic "condition" {
+        for_each = toset(try(statement.value.condition, []))
+        content {
+          test     = condition.value.test
+          variable = condition.value.variable
+          values   = condition.value.values
+        }
+      }
+    }
+
+  }
+}
+
+resource "aws_iam_role_policy" "extra_bastion_permissions" {
+  count  = length(try(var.bastion_extra_iam, [])) > 0 ? 1 : 0
+  policy = data.aws_iam_policy_document.extra_bastion_permissions[count.index].json
+  role   = aws_iam_role.bastion.name
+}
