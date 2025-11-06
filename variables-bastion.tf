@@ -39,3 +39,9 @@ variable "bastion_vendor" {
     error_message = "The bastion_vendor must be one of 'ubuntu', 'amazon', 'centos', or 'rhel'."
   }
 }
+
+variable "bastion_extra_iam_permissions" {
+  description = "A list of additional IAM permissions to attach to the bastion host's IAM role."
+  type        = any
+  default     = []
+}
