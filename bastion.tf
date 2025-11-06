@@ -175,6 +175,6 @@ data "aws_iam_policy_document" "extra_bastion_permissions" {
 
 resource "aws_iam_role_policy" "extra_bastion_permissions" {
   count  = length(try(var.bastion_extra_iam, [])) > 0 ? 1 : 0
-  policy = data.aws_iam_policy_document.extra_bastion_permissions.json
+  policy = data.aws_iam_policy_document.extra_bastion_permissions[count.index].json
   role   = aws_iam_role.bastion.name
 }
