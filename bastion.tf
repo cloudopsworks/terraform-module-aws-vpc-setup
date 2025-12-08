@@ -75,15 +75,16 @@ data "cloudinit_config" "prometheus_server_cloudinit" {
 }
 
 resource "aws_instance" "bastion_server" {
-  count                  = var.create_bastion ? 1 : 0
-  ami                    = data.aws_ami.ubuntu.id
-  instance_type          = var.bastion_size
-  key_name               = aws_key_pair.bastion_key[count.index].key_name
-  vpc_security_group_ids = [aws_security_group.ssh_admin.id, aws_security_group.bastion.id]
-  user_data_base64       = data.cloudinit_config.prometheus_server_cloudinit.rendered
-  subnet_id              = module.vpc.public_subnets[0]
-  source_dest_check      = true
-  iam_instance_profile   = aws_iam_instance_profile.bastion.name
+  count                       = var.create_bastion ? 1 : 0
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = var.bastion_size
+  key_name                    = aws_key_pair.bastion_key[count.index].key_name
+  vpc_security_group_ids      = [aws_security_group.ssh_admin.id, aws_security_group.bastion.id]
+  user_data_base64            = data.cloudinit_config.prometheus_server_cloudinit.rendered
+  subnet_id                   = module.vpc.public_subnets[0]
+  associate_public_ip_address = true
+  source_dest_check           = true
+  iam_instance_profile        = aws_iam_instance_profile.bastion.name
 
   root_block_device {
     volume_size           = var.bastion_storage
