@@ -253,7 +253,7 @@ variable "enable_vpn_gateway" {
 }
 
 variable "enable_public_ip_on_launch" {
-  description = "Flag to enable public IPs for instances launched in the public subnets. If true, instances launched in the public subnets will receive a public IP."
+  description = "Flag to enable public IPs for instances launched in the public subnets. If true, instances launched in the public subnets will receive a public IP, defaults to true."
   type        = bool
-  default     = false
+  default     = true
 }
