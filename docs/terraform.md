@@ -9,10 +9,10 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.16.0 |
-| <a name="provider_cloudinit"></a> [cloudinit](#provider\_cloudinit) | 2.3.7 |
-| <a name="provider_local"></a> [local](#provider\_local) | 2.5.3 |
-| <a name="provider_tls"></a> [tls](#provider\_tls) | 4.1.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 6.4 |
+| <a name="provider_cloudinit"></a> [cloudinit](#provider\_cloudinit) | n/a |
+| <a name="provider_local"></a> [local](#provider\_local) | n/a |
+| <a name="provider_tls"></a> [tls](#provider\_tls) | n/a |
 
 ## Modules
 
@@ -36,6 +36,7 @@
 | [aws_iam_instance_profile.bastion](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile) | resource |
 | [aws_iam_role.bastion](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.vpc_logs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy.extra_bastion_permissions](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy.vpc_logs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) | resource |
 | [aws_iam_role_policy_attachment.bastion_ssm](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_instance.bastion_server](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) | resource |
@@ -68,6 +69,7 @@
 | [local_file.keypair_priv_bastion](https://registry.terraform.io/providers/hashicorp/local/latest/docs/resources/file) | resource |
 | [tls_private_key.keypair_gen_bastion](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key) | resource |
 | [aws_ami.ubuntu](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
+| [aws_iam_policy_document.extra_bastion_permissions](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.generic_endpoint_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 | [aws_subnet.alternat_subnet](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnet) | data source |
@@ -78,6 +80,7 @@
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_availability_zones"></a> [availability\_zones](#input\_availability\_zones) | List of availability zones for the VPC | `list(string)` | n/a | yes |
+| <a name="input_bastion_extra_iam"></a> [bastion\_extra\_iam](#input\_bastion\_extra\_iam) | A list of additional IAM permissions to attach to the bastion host's IAM role. | `any` | `[]` | no |
 | <a name="input_bastion_size"></a> [bastion\_size](#input\_bastion\_size) | The instance type for the bastion host. Default is 't3a.micro'. | `string` | `"t3a.micro"` | no |
 | <a name="input_bastion_state"></a> [bastion\_state](#input\_bastion\_state) | The state of the bastion host. Can be 'running' or 'stopped'. Default is 'stopped'. | `string` | `"stopped"` | no |
 | <a name="input_bastion_storage"></a> [bastion\_storage](#input\_bastion\_storage) | The size of the EBS volume for the bastion host in GB. Default is '10'. | `string` | `"10"` | no |
@@ -92,7 +95,7 @@
 | <a name="input_docker_version_server"></a> [docker\_version\_server](#input\_docker\_version\_server) | Docker version to use for the server, at bastion host | `string` | `"26.0"` | no |
 | <a name="input_enable_nat_gateway"></a> [enable\_nat\_gateway](#input\_enable\_nat\_gateway) | Flag to enable NAT gateway creation. If true, a NAT gateway will be created in the VPC. | `bool` | `true` | no |
 | <a name="input_enable_nat_instance"></a> [enable\_nat\_instance](#input\_enable\_nat\_instance) | Flag to enable NAT instance creation. If true, a NAT instance will be created in the VPC. and will override enable\_nat\_gateway. | `bool` | `false` | no |
-| <a name="input_enable_public_ip_on_launch"></a> [enable\_public\_ip\_on\_launch](#input\_enable\_public\_ip\_on\_launch) | Flag to enable public IPs for instances launched in the public subnets. If true, instances launched in the public subnets will receive a public IP. | `bool` | `false` | no |
+| <a name="input_enable_public_ip_on_launch"></a> [enable\_public\_ip\_on\_launch](#input\_enable\_public\_ip\_on\_launch) | Flag to enable public IPs for instances launched in the public subnets. If true, instances launched in the public subnets will receive a public IP, defaults to true. | `bool` | `true` | no |
 | <a name="input_enable_vpn_gateway"></a> [enable\_vpn\_gateway](#input\_enable\_vpn\_gateway) | Flag to enable VPN gateway creation. If true, a VPN gateway will be created in the VPC. | `bool` | `false` | no |
 | <a name="input_endpoint_services"></a> [endpoint\_services](#input\_endpoint\_services) | List of endpoint services to create in the VPC. This is used to define which AWS services will have endpoints in the VPC. | `any` | `[]` | no |
 | <a name="input_external_nat_ip_ids"></a> [external\_nat\_ip\_ids](#input\_external\_nat\_ip\_ids) | List of external NAT IP IDs to use if reuse\_nat\_ips is true. This is used to specify existing NAT IPs to reuse. | `list(string)` | `[]` | no |
