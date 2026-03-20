@@ -15,5 +15,21 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 6.4"
     }
+    cloudinit = {
+      source  = "hashicorp/cloudinit"
+      version = "~> 2.3"
+    }
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.7"
+    }
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 4.1"
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.5"
+    }
   }
 }
