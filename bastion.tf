@@ -11,7 +11,7 @@ locals {
   bastion_map = {
     amazon = {
       ami_owner    = "amazon"
-      ami_name     = "al2023-ami-*"
+      ami_name     = "al2023-ami-2023*"
       default_user = "ec2-user"
     }
     ubuntu = {
