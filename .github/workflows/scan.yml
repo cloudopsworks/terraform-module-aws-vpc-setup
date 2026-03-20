@@ -64,7 +64,7 @@ jobs:
 
       - name: Run Checkov Checks
         id: checkov
-        uses: ./bp/ci/terraform/scan/checkov
+        uses: ./bp/ci/scan/checkov
         with:
           token: ${{ secrets.BOT_TOKEN }}
 
