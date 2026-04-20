@@ -12,15 +12,16 @@
 
 # Terraform AWS VPC Setup Terraform Module
 
-
+ [![Latest Release](https://img.shields.io/github/release/cloudopsworks/terraform-module-aws-vpc-setup.svg?style=for-the-badge)](https://github.com/cloudopsworks/terraform-module-aws-vpc-setup/releases/latest) [![Last Updated](https://img.shields.io/github/last-commit/cloudopsworks/terraform-module-aws-vpc-setup.svg?style=for-the-badge)](https://github.com/cloudopsworks/terraform-module-aws-vpc-setup/commits)
 
 
 Terraform module for creating and managing a production-grade AWS VPC with structured,
 composable configuration. Provisions public, private, database, and intra subnet tiers;
-NAT gateway or NAT instance (including high-volume alternat); VPC Flow Logs; VPC endpoints;
-network ACLs; an optional bastion host; and all associated IAM, security groups, and
-CloudWatch resources. Configuration is expressed as two structured input objects (`vpc`
-and `bastion`) that directly mirror a `inputs.yaml` file consumed by Terragrunt.
+NAT gateway or NAT instance (standard or high-volume alternat); VPC Flow Logs to
+CloudWatch; VPC endpoints; custom network ACLs; SSH security groups; and an optional
+EC2 bastion host with SSM access and optional Secrets Manager integration. All
+module-specific configuration is expressed as two typed object variables — `vpc` and
+`bastion` — that map directly to a single `inputs.yaml` file consumed by Terragrunt.
 
 
 ---
@@ -51,27 +52,27 @@ We have [*lots of terraform modules*][terraform_modules] that are Open Source an
 ## Introduction
 
 The AWS VPC Setup module provides a complete, opinionated network foundation for AWS
-workloads. All configuration is expressed as two typed object variables (`vpc` and
-`bastion`) rather than many flat variables, making it easier to manage via a single
-`inputs.yaml` file in a Terragrunt hierarchy.
+workloads. Configuration is driven by two structured input objects (`vpc` and `bastion`)
+rather than dozens of flat variables, making it straightforward to manage through a
+single `inputs.yaml` file in a Terragrunt hierarchy.
 
 **Core capabilities**
 
 | Feature | Details |
 |---|---|
-| VPC | Configurable CIDR, multi-AZ, DNS support/hostnames, DHCP options, VPN gateway |
-| Subnets | Public, private, database (with subnet group), and intra tiers; optional per-subnet route tables |
-| NAT | Managed NAT gateway (single or per-AZ, optional EIP reuse) **or** fck-nat NAT instance (spot, standard, or high-volume alternat) |
-| Flow Logs | VPC Flow Logs to CloudWatch with configurable traffic type (ACCEPT / REJECT / ALL) and retention |
-| VPC Endpoints | Default S3 Gateway endpoint; arbitrary additional Interface/Gateway endpoints with optional policy |
-| Network ACLs | Default ACL rule sets for each subnet tier; extra inbound/outbound rules configurable per tier |
-| Security Groups | SSH admin and bastion security groups with configurable VPN and internal CIDR access |
-| Bastion Host | Optional EC2 bastion (ubuntu/amazon/centos/rhel, configurable instance type, Docker pre-installed, SSM-enabled) |
-| Secrets Manager | Optional storage of bastion SSH keypair in AWS Secrets Manager with SSM Parameter Store integration for DevOps Accelerator |
+| VPC | Custom CIDR, multi-AZ, DNS support/hostnames, DHCP options set, optional VPN gateway |
+| Subnets | Public, private, database (with RDS subnet group), and intra (isolated) tiers |
+| NAT | Managed NAT gateway (single or per-AZ, optional EIP reuse) **or** fck-nat NAT instance (Spot, standard, or high-volume alternat) |
+| Flow Logs | VPC Flow Logs to CloudWatch with configurable traffic type (ACCEPT / REJECT / ALL) and log retention |
+| VPC Endpoints | Default S3 Gateway endpoint; arbitrary additional Interface or Gateway endpoints with optional resource policy |
+| Network ACLs | Sensible default rule sets for every subnet tier; extra rules configurable per tier |
+| Security Groups | SSH admin and bastion security groups; VPN and internal CIDR access configurable |
+| Bastion Host | Optional EC2 bastion (ubuntu / amazon / centos / rhel), Docker pre-installed, SSM-managed, configurable state |
+| Secrets Manager | Optional storage of bastion SSH keypair; SSM Parameter Store integration for DevOps Accelerator |
 
-The module is designed for use within a [Terragrunt](https://terragrunt.gruntwork.io/)
-hierarchy where each environment folder contains an `inputs.yaml` that drives all
-configuration, keeping Terraform code DRY across regions and accounts.
+The `.boilerplate/` directory contains a [Terragrunt scaffold](https://docs.terragrunt.com/reference/cli/commands/scaffold)
+template. Running `terragrunt scaffold` against this repository generates a ready-to-edit
+`terragrunt.hcl` and `inputs.yaml` in any deployment directory.
 
 ## Usage
 
@@ -80,297 +81,197 @@ configuration, keeping Terraform code DRY across regions and accounts.
 Instead pin to the release tag (e.g. `?ref=vX.Y.Z`) of one of our [latest releases](https://github.com/cloudopsworks/terraform-module-aws-vpc-setup/releases).
 
 
-## Terragrunt Usage (recommended)
+## Terragrunt scaffold workflow (recommended)
 
-### 1. Create `inputs.yaml` in your environment folder
+```sh
+# 1. Create and enter the target deployment directory
+mkdir -p live/prod/us-east-1/spoke001/vpc
+cd live/prod/us-east-1/spoke001/vpc
 
-```yaml
-# live/prod/us-east-1/network/vpc/inputs.yaml
-vpc:
-  cidr_block: "10.2.0.0/16"
-  availability_zones:
-    - "us-east-1a"
-    - "us-east-1b"
-  public_ip_on_launch: false
+# 2. Scaffold the module — generates terragrunt.hcl, inputs.yaml, and local-tags.json
+terragrunt scaffold github.com/cloudopsworks/terraform-module-aws-vpc-setup
 
-  subnet_cidr_blocks:
-    public:
-      - "10.2.1.0/26"
-      - "10.2.1.64/26"
-    private:
-      - "10.2.8.0/21"
-      - "10.2.16.0/21"
-    database: []
-    intra: []
+# 3. Edit inputs.yaml with deployment-specific values
+vi inputs.yaml
 
-  dhcp_option:
-    dns:
-      - "10.2.0.2"
-    domain:
-      name: "prod.example.com"
-
-  nat_gateway:
-    enabled: true
-    single: false          # one NAT gateway per AZ
-    reuse_eip: true        # use pre-allocated EIPs from ../eip module
-
-  nat_instance:
-    enabled: false
-
-  flow_logs:
-    type: "REJECT"
-    retention: 90
-
-  internal_allow_cidrs:
-    - "10.0.0.0/8"
-    - "172.16.0.0/12"
-
-  default_endpoint:
-    enabled: true
-
-  secrets_manager:
-    enabled: true
-
-  acl_rules:
-    public_outbound:
-      - cidr_block: "203.0.113.10/32"
-        from_port: 22
-        to_port: 22
-        protocol: "tcp"
-        rule_action: "allow"
-
-bastion:
-  create: true
-  vm_size: "t3.small"
-  disk_size: 20
-  state: "running"
-  vendor: "ubuntu"
-  devops_accelerator: true
-
-vpn_accesses:
-  - "203.0.113.10/32"
-
-endpoint_services:
-  - name: ssm
-  - name: ssmmessages
-  - name: ec2messages
-  - name: dynamodb
-    type: Gateway
+# 4. Apply
+terragrunt apply
 ```
 
-### 2. Create `terragrunt.hcl`
+---
+
+## Generated `inputs.yaml`
+
+The scaffold command copies `.boilerplate/inputs.yaml` into the deployment directory.
+Edit the values; all keys and inline comments are pre-populated.
+
+```yaml
+# Module configuration — fill in values then run: terragrunt apply
+
+vpc:                                          # (Required) VPC configuration
+  cidr_block: "10.0.0.0/16"                  # (Required) CIDR block for the VPC, e.g. "10.0.0.0/16"
+  availability_zones:                         # (Required) List of AWS availability zone names
+    - "us-east-1a"
+    - "us-east-1b"
+  public_ip_on_launch: true                   # (Optional) Auto-assign public IPs in public subnets. Default: true
+
+  subnet_cidr_blocks:                         # (Optional) CIDR blocks per subnet tier. Default: all empty
+    public:                                   # (Optional) Public subnet CIDRs (one per AZ recommended). Default: []
+      - "10.0.1.0/26"
+      - "10.0.1.64/26"
+    private:                                  # (Optional) Private subnet CIDRs (one per AZ recommended). Default: []
+      - "10.0.8.0/21"
+      - "10.0.16.0/21"
+    database: []                              # (Optional) Database subnet CIDRs — also creates a DB subnet group. Default: []
+    intra: []                                 # (Optional) Intra subnet CIDRs — isolated, no internet route. Default: []
+
+  subnet_names:                               # (Optional) Friendly names per tier, positionally matched. Default: all empty
+    public: []
+    private: []
+    database: []
+
+  dhcp_option:                                # (Optional) DHCP options set for the VPC. Default: {}
+    dns:                                      # (Optional) DNS server IPs. Default: []
+      - "10.0.0.2"
+    domain:
+      name: "example.com"                     # (Optional) Domain name suffix for DHCP. Default: "sample.com"
+
+  nat_gateway:                                # (Optional) Managed NAT gateway settings. Default: {}
+    enabled: true                             # (Optional) Create NAT gateway(s). Default: true
+    single: true                              # (Optional) Single shared NAT gateway for all AZs. Default: true
+    reuse_eip: false                          # (Optional) Reuse pre-allocated Elastic IPs. Default: false
+    eip_ids: []                               # (Optional) EIP allocation IDs when reuse_eip=true. Default: []
+
+  nat_instance:                               # (Optional) fck-nat instance — overrides nat_gateway when enabled. Default: {}
+    enabled: false                            # (Optional) Use NAT instance instead of gateway. Default: false
+    size: "t4g.micro"                         # (Optional) Instance type; arm64 recommended. Default: "t4g.micro"
+    allowed_cidrs: []                         # (Optional) CIDRs routed through the NAT instance. Default: []
+    spot: false                               # (Optional) Use Spot instance for cost savings. Default: false
+    high_volume: false                        # (Optional) Deploy high-throughput alternat solution. Default: false
+
+  flow_logs:                                  # (Optional) VPC Flow Logs to CloudWatch. Default: {}
+    type: "REJECT"                            # (Optional) Values: ACCEPT, REJECT, ALL. Default: "REJECT"
+    retention: 30                             # (Optional) CloudWatch log retention in days. Default: 30
+
+  vpn_gateway:                                # (Optional) Virtual Private Gateway. Default: {}
+    enabled: false                            # (Optional) Attach a VGW to the VPC. Default: false
+
+  route_tables:                               # (Optional) Route table behaviour overrides. Default: {}
+    multiple_intra: false                     # (Optional) One route table per intra subnet. Default: false
+    multiple_public: false                    # (Optional) One route table per public subnet. Default: false
+    intra_nat: false                          # (Optional) Route intra egress through NAT. Default: false
+
+  internal_allow_cidrs: []                    # (Optional) CIDRs allowed via ACLs and SSH SG. Default: []
+
+  default_endpoint:
+    enabled: true                             # (Optional) Create default S3 Gateway endpoint. Default: true
+
+  secrets_manager:
+    enabled: false                            # (Optional) Store bastion keys in Secrets Manager. Default: false
+
+  acl_rules:                                  # (Optional) Extra ACL rules per tier (start at rule 1000). Default: {}
+    public: []
+    public_outbound: []
+    private: []
+
+bastion:                                      # (Optional) Bastion host configuration. Default: {}
+  create: false                               # (Optional) Create bastion host. Default: false
+  vm_size: "t3a.micro"                        # (Optional) EC2 instance type. Default: "t3a.micro"
+  disk_size: 10                               # (Optional) Root EBS size in GB. Default: 10
+  state: "stopped"                            # (Optional) Values: running, stopped. Default: "stopped"
+  vendor: "ubuntu"                            # (Optional) Values: ubuntu, amazon, centos, rhel. Default: "ubuntu"
+  docker_version: "26.0"                      # (Optional) Docker version to install. Default: "26.0"
+  devops_accelerator: false                   # (Optional) Publish metadata to SSM for DevOps Accelerator. Default: false
+  extra_iam: []                               # (Optional) Extra IAM policy statements for the bastion role. Default: []
+
+vpn_accesses: []                              # (Optional) CIDRs for VPN/SSH access to bastion and ACLs. Default: []
+endpoint_services: []                         # (Optional) Additional VPC endpoint services. Default: []
+```
+
+---
+
+## Generated `terragrunt.hcl`
+
+The scaffold template wires `inputs.yaml` (loaded as `local.local_vars`) into the
+module `inputs` block. Required variables are referenced directly; optional variables
+use `try()` with their default value.
 
 ```hcl
 locals {
   local_vars  = yamldecode(file("./inputs.yaml"))
   spoke_vars  = yamldecode(file(find_in_parent_folders("spoke-inputs.yaml")))
+  region_vars = yamldecode(file(find_in_parent_folders("region-inputs.yaml")))
   env_vars    = yamldecode(file(find_in_parent_folders("env-inputs.yaml")))
+  global_vars = yamldecode(file(find_in_parent_folders("global-inputs.yaml")))
 
   local_tags  = jsondecode(file("./local-tags.json"))
   spoke_tags  = jsondecode(file(find_in_parent_folders("spoke-tags.json")))
+  region_tags = jsondecode(file(find_in_parent_folders("region-tags.json")))
   env_tags    = jsondecode(file(find_in_parent_folders("env-tags.json")))
   global_tags = jsondecode(file(find_in_parent_folders("global-tags.json")))
 
-  tags = merge(local.global_tags, local.env_tags, local.spoke_tags, local.local_tags)
+  tags = merge(
+    local.global_tags,
+    local.env_tags,
+    local.region_tags,
+    local.spoke_tags,
+    local.local_tags
+  )
 }
 
 include "root" {
   path = find_in_parent_folders("root.hcl")
 }
 
-dependencies {
-  paths = ["../eip"]
-}
-
-dependency "eip" {
-  config_path                             = "../eip"
-  mock_outputs_allowed_terraform_commands = ["validate"]
-  mock_outputs = {
-    public_ip_ids = ["eipalloc-00000000000000001", "eipalloc-00000000000000002"]
-  }
-}
-
 terraform {
-  source = "git::https://github.com/cloudopsworks/terraform-module-aws-vpc-setup.git//?ref=v1.5.0"
+  source = "github.com/cloudopsworks/terraform-module-aws-vpc-setup"
 }
 
 inputs = {
-  is_hub    = true
+  is_hub    = false
   org       = local.env_vars.org
   spoke_def = local.spoke_vars.spoke
 
-  vpc = {
-    cidr_block          = local.local_vars.vpc.cidr_block
-    availability_zones  = local.local_vars.vpc.availability_zones
-    public_ip_on_launch = try(local.local_vars.vpc.public_ip_on_launch, true)
+  # Required — loaded directly from inputs.yaml
+  vpc = local.local_vars.vpc
 
-    subnet_cidr_blocks = {
-      public   = try(local.local_vars.vpc.subnet_cidr_blocks.public, [])
-      private  = try(local.local_vars.vpc.subnet_cidr_blocks.private, [])
-      database = try(local.local_vars.vpc.subnet_cidr_blocks.database, [])
-      intra    = try(local.local_vars.vpc.subnet_cidr_blocks.intra, [])
-    }
-
-    dhcp_option = {
-      dns    = try(local.local_vars.vpc.dhcp_option.dns, [])
-      domain = { name = try(local.local_vars.vpc.dhcp_option.domain.name, "example.com") }
-    }
-
-    nat_gateway = {
-      enabled   = try(local.local_vars.vpc.nat_gateway.enabled, true)
-      single    = try(local.local_vars.vpc.nat_gateway.single, true)
-      reuse_eip = try(local.local_vars.vpc.nat_gateway.reuse_eip, false)
-      eip_ids   = dependency.eip.outputs.public_ip_ids
-    }
-
-    nat_instance = {
-      enabled       = try(local.local_vars.vpc.nat_instance.enabled, false)
-      size          = try(local.local_vars.vpc.nat_instance.size, "t4g.micro")
-      allowed_cidrs = try(local.local_vars.vpc.nat_instance.allowed_cidrs, [])
-      spot          = try(local.local_vars.vpc.nat_instance.spot, false)
-      high_volume   = try(local.local_vars.vpc.nat_instance.high_volume, false)
-    }
-
-    flow_logs = {
-      type      = try(local.local_vars.vpc.flow_logs.type, "REJECT")
-      retention = try(local.local_vars.vpc.flow_logs.retention, 30)
-    }
-
-    vpn_gateway  = { enabled = try(local.local_vars.vpc.vpn_gateway.enabled, false) }
-    route_tables = {
-      multiple_intra  = try(local.local_vars.vpc.route_tables.multiple_intra, false)
-      multiple_public = try(local.local_vars.vpc.route_tables.multiple_public, false)
-      intra_nat       = try(local.local_vars.vpc.route_tables.intra_nat, false)
-    }
-
-    internal_allow_cidrs = try(local.local_vars.vpc.internal_allow_cidrs, [])
-    default_endpoint     = { enabled = try(local.local_vars.vpc.default_endpoint.enabled, true) }
-    secrets_manager      = { enabled = try(local.local_vars.vpc.secrets_manager.enabled, false) }
-
-    acl_rules = {
-      public          = try(local.local_vars.vpc.acl_rules.public, [])
-      public_outbound = try(local.local_vars.vpc.acl_rules.public_outbound, [])
-      private         = try(local.local_vars.vpc.acl_rules.private, [])
-    }
-  }
-
-  bastion = {
-    create             = try(local.local_vars.bastion.create, false)
-    vm_size            = try(local.local_vars.bastion.vm_size, "t3a.micro")
-    disk_size          = try(local.local_vars.bastion.disk_size, 10)
-    state              = try(local.local_vars.bastion.state, "stopped")
-    vendor             = try(local.local_vars.bastion.vendor, "ubuntu")
-    docker_version     = try(local.local_vars.bastion.docker_version, "26.0")
-    devops_accelerator = try(local.local_vars.bastion.devops_accelerator, false)
-  }
-
+  # Optional — use try() so the file can omit them and fall back to module defaults
+  bastion           = try(local.local_vars.bastion, {})
   vpn_accesses      = try(local.local_vars.vpn_accesses, [])
   endpoint_services = try(local.local_vars.endpoint_services, [])
-  extra_tags        = local.tags
+
+  extra_tags = local.tags
 }
 ```
 
-### Variable reference
-
-#### `vpc` object
-
-| Attribute | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `cidr_block` | `string` | yes | — | VPC CIDR block, e.g. `"10.0.0.0/16"` |
-| `availability_zones` | `list(string)` | yes | — | AZ names, e.g. `["us-east-1a","us-east-1b"]` |
-| `public_ip_on_launch` | `bool` | no | `true` | Map public IPs to instances in public subnets |
-| `subnet_cidr_blocks.public` | `list(string)` | no | `[]` | Public subnet CIDR blocks |
-| `subnet_cidr_blocks.private` | `list(string)` | no | `[]` | Private subnet CIDR blocks |
-| `subnet_cidr_blocks.database` | `list(string)` | no | `[]` | Database subnet CIDR blocks |
-| `subnet_cidr_blocks.intra` | `list(string)` | no | `[]` | Intra (isolated) subnet CIDR blocks |
-| `subnet_names.public` | `list(string)` | no | `[]` | Names for public subnets (positional) |
-| `subnet_names.private` | `list(string)` | no | `[]` | Names for private subnets (positional) |
-| `subnet_names.database` | `list(string)` | no | `[]` | Names for database subnets (positional) |
-| `dhcp_option.dns` | `list(string)` | no | `[]` | DNS server IPs for DHCP options set |
-| `dhcp_option.domain.name` | `string` | no | `"sample.com"` | Domain name for DHCP options |
-| `nat_gateway.enabled` | `bool` | no | `true` | Create NAT gateway(s) |
-| `nat_gateway.single` | `bool` | no | `true` | Single shared NAT gateway for all AZs |
-| `nat_gateway.reuse_eip` | `bool` | no | `false` | Reuse pre-allocated Elastic IPs |
-| `nat_gateway.eip_ids` | `list(string)` | no | `[]` | EIP allocation IDs when `reuse_eip=true` |
-| `nat_instance.enabled` | `bool` | no | `false` | Use NAT instance instead of NAT gateway |
-| `nat_instance.size` | `string` | no | `"t4g.micro"` | Instance type for the NAT instance |
-| `nat_instance.allowed_cidrs` | `list(string)` | no | `[]` | CIDRs routed through the NAT instance |
-| `nat_instance.spot` | `bool` | no | `false` | Use a Spot instance for the NAT instance |
-| `nat_instance.high_volume` | `bool` | no | `false` | Deploy high-throughput alternat solution |
-| `flow_logs.type` | `string` | no | `"REJECT"` | Traffic type: `ACCEPT`, `REJECT`, or `ALL` |
-| `flow_logs.retention` | `number` | no | `30` | CloudWatch log retention in days |
-| `vpn_gateway.enabled` | `bool` | no | `false` | Attach a Virtual Private Gateway |
-| `route_tables.multiple_intra` | `bool` | no | `false` | One route table per intra subnet |
-| `route_tables.multiple_public` | `bool` | no | `false` | One route table per public subnet |
-| `route_tables.intra_nat` | `bool` | no | `false` | Route intra subnet egress via NAT |
-| `internal_allow_cidrs` | `list(string)` | no | `[]` | CIDRs allowed internally (ACLs + SSH SG) |
-| `default_endpoint.enabled` | `bool` | no | `true` | Create default S3 Gateway VPC endpoint |
-| `secrets_manager.enabled` | `bool` | no | `false` | Store bastion keys in Secrets Manager |
-| `acl_rules.public` | `list(object)` | no | `[]` | Extra inbound ACL rules for public subnets |
-| `acl_rules.public_outbound` | `list(object)` | no | `[]` | Extra outbound ACL rules for public subnets |
-| `acl_rules.private` | `list(object)` | no | `[]` | Extra inbound ACL rules for private subnets |
-
-Each ACL rule object: `{ cidr_block, protocol, rule_action, from_port?, to_port? }`
-
-#### `bastion` object
-
-| Attribute | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `create` | `bool` | no | `false` | Create a bastion host |
-| `vm_size` | `string` | no | `"t3a.micro"` | EC2 instance type |
-| `disk_size` | `number` | no | `10` | Root EBS volume size in GB |
-| `state` | `string` | no | `"stopped"` | Desired state: `running` or `stopped` |
-| `vendor` | `string` | no | `"ubuntu"` | OS vendor: `ubuntu`, `amazon`, `centos`, `rhel` |
-| `docker_version` | `string` | no | `"26.0"` | Docker engine version to install |
-| `devops_accelerator` | `bool` | no | `false` | Publish bastion metadata to SSM Parameter Store |
-| `extra_iam` | `any` | no | `[]` | Additional IAM policy statements for the bastion role |
-
-#### Top-level variables
-
-| Variable | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `vpn_accesses` | `list(string)` | no | `[]` | CIDR blocks for VPN/external SSH access |
-| `endpoint_services` | `any` | no | `[]` | Additional VPC endpoint services |
-| `extra_tags` | `map(string)` | no | `{}` | Additional tags merged onto all resources |
-| `is_hub` | `bool` | no | `false` | Hub vs spoke designation for naming/flow logs |
-| `spoke_def` | `string` | no | `"001"` | Three-digit spoke identifier |
-| `org` | `object` | yes | — | Organization metadata (name, unit, env type/name) |
-
 ## Quick Start
 
-1. **Add the module reference** to your Terragrunt source in `terragrunt.hcl`:
-   ```hcl
-   terraform {
-     source = "git::https://github.com/cloudopsworks/terraform-module-aws-vpc-setup.git//?ref=v1.5.0"
-   }
+1. **Create the deployment directory** and scaffold the module:
+   ```sh
+   mkdir -p live/prod/us-east-1/spoke001/vpc
+   cd live/prod/us-east-1/spoke001/vpc
+   terragrunt scaffold github.com/cloudopsworks/terraform-module-aws-vpc-setup
    ```
 
-2. **Scaffold `inputs.yaml`** using the boilerplate template (requires [boilerplate](https://github.com/gruntwork-io/boilerplate)):
-   ```bash
-   boilerplate \
-     --template-url "git@github.com:cloudopsworks/terraform-module-aws-vpc-setup.git//.boilerplate" \
-     --output-folder ./live/dev/vpc \
-     --var sourceUrl="git::https://github.com/cloudopsworks/terraform-module-aws-vpc-setup.git//?ref=v1.5.0" \
-     --var is_hub=false \
-     --var RootFileName=root.hcl
-   ```
+2. **Edit `inputs.yaml`** — set `vpc.cidr_block`, `vpc.availability_zones`, and subnet CIDRs.
+   All keys are pre-populated with defaults and inline comments.
 
-3. **Edit `inputs.yaml`** to set your CIDR, AZs, subnets, and bastion preferences.
-
-4. **Deploy** with Terragrunt:
-   ```bash
-   terragrunt init
-   terragrunt plan
+3. **Apply**:
+   ```sh
    terragrunt apply
    ```
+
+> **Tip — EIP reuse**: If you need stable public IPs for NAT gateways, deploy an `eip`
+> module first, add it as a Terragrunt dependency, and pass `dependency.eip.outputs.public_ip_ids`
+> into `vpc.nat_gateway.eip_ids` with `reuse_eip: true` in `inputs.yaml`.
 
 
 ## Examples
 
-### Minimal VPC — private subnets only, NAT gateway, no bastion
+### Minimal — private subnets only, single NAT gateway, no bastion
 
-**`inputs.yaml`**
 ```yaml
+# inputs.yaml
 vpc:
   cidr_block: "10.10.0.0/16"
   availability_zones:
@@ -396,41 +297,12 @@ vpn_accesses: []
 endpoint_services: []
 ```
 
-**`terragrunt.hcl`** (abbreviated)
-```hcl
-terraform {
-  source = "git::https://github.com/cloudopsworks/terraform-module-aws-vpc-setup.git//?ref=v1.5.0"
-}
-inputs = {
-  is_hub    = false
-  org       = local.env_vars.org
-  spoke_def = local.spoke_vars.spoke
-  vpc = {
-    cidr_block         = local.local_vars.vpc.cidr_block
-    availability_zones = local.local_vars.vpc.availability_zones
-    subnet_cidr_blocks = {
-      public   = []
-      private  = local.local_vars.vpc.subnet_cidr_blocks.private
-      database = []
-      intra    = []
-    }
-    dhcp_option      = { dns = local.local_vars.vpc.dhcp_option.dns, domain = { name = local.local_vars.vpc.dhcp_option.domain.name } }
-    nat_gateway      = { enabled = true, single = true, reuse_eip = false, eip_ids = [] }
-    default_endpoint = { enabled = true }
-  }
-  bastion           = {}
-  vpn_accesses      = []
-  endpoint_services = []
-  extra_tags        = local.tags
-}
-```
-
 ---
 
-### Hub VPC — public + private subnets, per-AZ NAT gateways, bastion, SSM endpoints
+### Hub VPC — public + private subnets, per-AZ NAT gateways with EIP reuse, bastion, SSM endpoints
 
-**`inputs.yaml`**
 ```yaml
+# inputs.yaml
 vpc:
   cidr_block: "10.2.0.0/16"
   availability_zones:
@@ -444,7 +316,6 @@ vpc:
     private:
       - "10.2.8.0/21"
       - "10.2.16.0/21"
-    database: []
   dhcp_option:
     dns:
       - "10.2.0.2"
@@ -454,9 +325,9 @@ vpc:
     enabled: true
     single: false
     reuse_eip: true
+    eip_ids: []          # populated by dependency in terragrunt.hcl
   internal_allow_cidrs:
     - "10.0.0.0/8"
-    - "172.16.0.0/12"
   default_endpoint:
     enabled: true
   secrets_manager:
@@ -485,10 +356,10 @@ endpoint_services:
 
 ---
 
-### Cost-optimised spoke — NAT instance (spot, fck-nat)
+### Cost-optimised spoke — Spot fck-nat instance, no bastion
 
-**`inputs.yaml`**
 ```yaml
+# inputs.yaml
 vpc:
   cidr_block: "10.5.0.0/16"
   availability_zones:
@@ -611,14 +482,14 @@ Available targets:
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_bastion"></a> [bastion](#input\_bastion) | Bastion host configuration | <pre>object({<br/>    create             = optional(bool, false)         # (Optional) Create a bastion host in the first public subnet, default: false<br/>    vm_size            = optional(string, "t3a.micro") # (Optional) EC2 instance type for the bastion, default: "t3a.micro"<br/>    disk_size          = optional(number, 10)          # (Optional) Root EBS volume size in GB, default: 10<br/>    state              = optional(string, "stopped")   # (Optional) Desired instance state: running or stopped, default: "stopped"<br/>    vendor             = optional(string, "ubuntu")    # (Optional) OS vendor: ubuntu, amazon, centos, or rhel, default: "ubuntu"<br/>    docker_version     = optional(string, "26.0")      # (Optional) Docker engine version to install, default: "26.0"<br/>    devops_accelerator = optional(bool, false)         # (Optional) Publish bastion metadata to SSM Parameter Store for DevOps Accelerator, default: false<br/>    extra_iam          = optional(any, [])             # (Optional) Additional IAM policy statement objects to attach to the bastion IAM role<br/>  })</pre> | `{}` | no |
-| <a name="input_endpoint_services"></a> [endpoint\_services](#input\_endpoint\_services) | Additional VPC endpoint services to create beyond the default S3 gateway endpoint | `any` | `[]` | no |
+| <a name="input_bastion"></a> [bastion](#input\_bastion) | Bastion host configuration. All attributes optional; omit the entire block or set create=false to skip. Default: {} | <pre>object({<br/>    create             = optional(bool, false)         # (Optional) Create a bastion host in the first public subnet. Default: false<br/>    vm_size            = optional(string, "t3a.micro") # (Optional) EC2 instance type for the bastion. Default: "t3a.micro"<br/>    disk_size          = optional(number, 10)          # (Optional) Root EBS volume size in GB. Default: 10<br/>    state              = optional(string, "stopped")   # (Optional) Desired instance state. Values: running, stopped. Default: "stopped"<br/>    vendor             = optional(string, "ubuntu")    # (Optional) OS vendor. Values: ubuntu, amazon, centos, rhel. Default: "ubuntu"<br/>    docker_version     = optional(string, "26.0")      # (Optional) Docker engine version to install. Default: "26.0"<br/>    devops_accelerator = optional(bool, false)         # (Optional) Register bastion metadata in SSM Parameter Store for DevOps Accelerator. Default: false<br/>    extra_iam          = optional(any, [])             # (Optional) Additional IAM policy statement objects for the bastion role. Default: []<br/>  })</pre> | `{}` | no |
+| <a name="input_endpoint_services"></a> [endpoint\_services](#input\_endpoint\_services) | Additional VPC endpoint services to create beyond the default S3 gateway endpoint. Default: [] | `any` | `[]` | no |
 | <a name="input_extra_tags"></a> [extra\_tags](#input\_extra\_tags) | Extra tags to add to the resources | `map(string)` | `{}` | no |
 | <a name="input_is_hub"></a> [is\_hub](#input\_is\_hub) | Is this a hub or spoke configuration? | `bool` | `false` | no |
 | <a name="input_org"></a> [org](#input\_org) | Organization details | <pre>object({<br/>    organization_name = string<br/>    organization_unit = string<br/>    environment_type  = string<br/>    environment_name  = string<br/>  })</pre> | n/a | yes |
 | <a name="input_spoke_def"></a> [spoke\_def](#input\_spoke\_def) | Spoke ID Number, must be a 3 digit number | `string` | `"001"` | no |
-| <a name="input_vpc"></a> [vpc](#input\_vpc) | VPC configuration | <pre>object({<br/>    cidr_block          = string               # (Required) CIDR block for the VPC, e.g. "10.0.0.0/16"<br/>    availability_zones  = list(string)         # (Required) List of AZ names, e.g. ["us-east-1a","us-east-1b"]<br/>    public_ip_on_launch = optional(bool, true) # (Optional) Map a public IP to instances launched in public subnets, default: true<br/><br/>    subnet_cidr_blocks = optional(object({<br/>      public   = optional(list(string), []) # (Optional) Public subnet CIDR blocks<br/>      private  = optional(list(string), []) # (Optional) Private subnet CIDR blocks<br/>      database = optional(list(string), []) # (Optional) Database subnet CIDR blocks<br/>      intra    = optional(list(string), []) # (Optional) Intra (isolated, no internet) subnet CIDR blocks<br/>    }), {})<br/><br/>    subnet_names = optional(object({<br/>      public   = optional(list(string), []) # (Optional) Names for public subnets, positionally matched to subnet_cidr_blocks.public<br/>      private  = optional(list(string), []) # (Optional) Names for private subnets<br/>      database = optional(list(string), []) # (Optional) Names for database subnets<br/>    }), {})<br/><br/>    dhcp_option = optional(object({<br/>      dns = optional(list(string), []) # (Optional) DNS server IP addresses for DHCP options set<br/>      domain = optional(object({<br/>        name = optional(string, "sample.com") # (Optional) Domain name suffix for DHCP options, default: "sample.com"<br/>      }), {})<br/>    }), {})<br/><br/>    nat_gateway = optional(object({<br/>      enabled   = optional(bool, true)       # (Optional) Create NAT gateway(s), default: true<br/>      single    = optional(bool, true)       # (Optional) Deploy a single NAT gateway shared across all AZs, default: true<br/>      reuse_eip = optional(bool, false)      # (Optional) Reuse pre-allocated Elastic IPs instead of creating new ones, default: false<br/>      eip_ids   = optional(list(string), []) # (Optional) Existing EIP allocation IDs to use when reuse_eip=true<br/>    }), {})<br/><br/>    nat_instance = optional(object({<br/>      enabled       = optional(bool, false)         # (Optional) Use a NAT instance instead of NAT gateway (overrides nat_gateway), default: false<br/>      size          = optional(string, "t4g.micro") # (Optional) EC2 instance type for the NAT instance, default: "t4g.micro"<br/>      allowed_cidrs = optional(list(string), [])    # (Optional) CIDR blocks allowed to route through the NAT instance<br/>      spot          = optional(bool, false)         # (Optional) Use a Spot instance for the NAT instance, default: false<br/>      high_volume   = optional(bool, false)         # (Optional) Deploy the high-throughput alternat solution, default: false<br/>    }), {})<br/><br/>    flow_logs = optional(object({<br/>      type      = optional(string, "REJECT") # (Optional) Traffic to capture: ACCEPT, REJECT, or ALL, default: "REJECT"<br/>      retention = optional(number, 30)       # (Optional) CloudWatch log group retention period in days, default: 30<br/>    }), {})<br/><br/>    vpn_gateway = optional(object({<br/>      enabled = optional(bool, false) # (Optional) Attach a Virtual Private Gateway to the VPC, default: false<br/>    }), {})<br/><br/>    route_tables = optional(object({<br/>      multiple_intra  = optional(bool, false) # (Optional) Create one route table per intra subnet instead of sharing, default: false<br/>      multiple_public = optional(bool, false) # (Optional) Create one route table per public subnet instead of sharing, default: false<br/>      intra_nat       = optional(bool, false) # (Optional) Route intra subnet egress through the NAT gateway, default: false<br/>    }), {})<br/><br/>    internal_allow_cidrs = optional(list(string), []) # (Optional) CIDR blocks granted unrestricted access via network ACLs and the SSH security group<br/><br/>    default_endpoint = optional(object({<br/>      enabled = optional(bool, true) # (Optional) Create the default S3 Gateway VPC endpoint, default: true<br/>    }), {})<br/><br/>    secrets_manager = optional(object({<br/>      enabled = optional(bool, false) # (Optional) Store bastion SSH keys in AWS Secrets Manager, default: false<br/>    }), {})<br/><br/>    acl_rules = optional(object({<br/>      public = optional(list(object({<br/>        cidr_block  = string<br/>        from_port   = optional(number, 0)<br/>        to_port     = optional(number, 0)<br/>        protocol    = string<br/>        rule_action = string<br/>      })), []) # (Optional) Extra inbound network ACL rules for public subnets (rule numbers start at 1000)<br/>      public_outbound = optional(list(object({<br/>        cidr_block  = string<br/>        from_port   = optional(number, 0)<br/>        to_port     = optional(number, 0)<br/>        protocol    = string<br/>        rule_action = string<br/>      })), []) # (Optional) Extra outbound network ACL rules for public subnets (rule numbers start at 1000)<br/>      private = optional(list(object({<br/>        cidr_block  = string<br/>        from_port   = optional(number, 0)<br/>        to_port     = optional(number, 0)<br/>        protocol    = string<br/>        rule_action = string<br/>      })), []) # (Optional) Extra inbound network ACL rules for private subnets (rule numbers start at 1000)<br/>    }), {})<br/>  })</pre> | n/a | yes |
-| <a name="input_vpn_accesses"></a> [vpn\_accesses](#input\_vpn\_accesses) | CIDR blocks permitted for VPN/external SSH access to the bastion and public network ACLs | `list(string)` | `[]` | no |
+| <a name="input_vpc"></a> [vpc](#input\_vpc) | VPC configuration. Required: cidr\_block, availability\_zones. All other attributes are optional with safe defaults. | <pre>object({<br/>    cidr_block          = string               # (Required) CIDR block for the VPC, e.g. "10.0.0.0/16"<br/>    availability_zones  = list(string)         # (Required) AWS AZ names, e.g. ["us-east-1a", "us-east-1b"]<br/>    public_ip_on_launch = optional(bool, true) # (Optional) Auto-assign public IPs in public subnets. Default: true<br/><br/>    subnet_cidr_blocks = optional(object({<br/>      public   = optional(list(string), []) # (Optional) Public subnet CIDRs. Default: []<br/>      private  = optional(list(string), []) # (Optional) Private subnet CIDRs. Default: []<br/>      database = optional(list(string), []) # (Optional) Database subnet CIDRs (also creates a DB subnet group). Default: []<br/>      intra    = optional(list(string), []) # (Optional) Intra subnet CIDRs (no internet route). Default: []<br/>    }), {})<br/><br/>    subnet_names = optional(object({<br/>      public   = optional(list(string), []) # (Optional) Names for public subnets, positionally matched. Default: []<br/>      private  = optional(list(string), []) # (Optional) Names for private subnets, positionally matched. Default: []<br/>      database = optional(list(string), []) # (Optional) Names for database subnets, positionally matched. Default: []<br/>    }), {})<br/><br/>    dhcp_option = optional(object({<br/>      dns = optional(list(string), []) # (Optional) DNS server IPs for the VPC DHCP options set. Default: []<br/>      domain = optional(object({<br/>        name = optional(string, "sample.com") # (Optional) Domain name suffix for DHCP options. Default: "sample.com"<br/>      }), {})<br/>    }), {})<br/><br/>    nat_gateway = optional(object({<br/>      enabled   = optional(bool, true)       # (Optional) Create NAT gateway(s). Default: true<br/>      single    = optional(bool, true)       # (Optional) Single NAT gateway shared across all AZs. Default: true<br/>      reuse_eip = optional(bool, false)      # (Optional) Reuse pre-allocated Elastic IPs. Default: false<br/>      eip_ids   = optional(list(string), []) # (Optional) EIP allocation IDs to reuse when reuse_eip=true. Default: []<br/>    }), {})<br/><br/>    nat_instance = optional(object({<br/>      enabled       = optional(bool, false)         # (Optional) Use fck-nat instance instead of gateway (overrides nat_gateway). Default: false<br/>      size          = optional(string, "t4g.micro") # (Optional) EC2 instance type. arm64 types recommended. Default: "t4g.micro"<br/>      allowed_cidrs = optional(list(string), [])    # (Optional) CIDRs routed through the NAT instance. Default: []<br/>      spot          = optional(bool, false)         # (Optional) Use a Spot instance for cost savings. Default: false<br/>      high_volume   = optional(bool, false)         # (Optional) Deploy the high-throughput alternat solution. Default: false<br/>    }), {})<br/><br/>    flow_logs = optional(object({<br/>      type      = optional(string, "REJECT") # (Optional) Traffic to capture. Values: ACCEPT, REJECT, ALL. Default: "REJECT"<br/>      retention = optional(number, 30)       # (Optional) CloudWatch log group retention in days. Default: 30<br/>    }), {})<br/><br/>    vpn_gateway = optional(object({<br/>      enabled = optional(bool, false) # (Optional) Attach a Virtual Private Gateway to the VPC. Default: false<br/>    }), {})<br/><br/>    route_tables = optional(object({<br/>      multiple_intra  = optional(bool, false) # (Optional) Create one route table per intra subnet instead of sharing. Default: false<br/>      multiple_public = optional(bool, false) # (Optional) Create one route table per public subnet instead of sharing. Default: false<br/>      intra_nat       = optional(bool, false) # (Optional) Route intra subnet egress through the NAT gateway. Default: false<br/>    }), {})<br/><br/>    internal_allow_cidrs = optional(list(string), []) # (Optional) CIDRs granted unrestricted access via network ACLs and SSH security group. Default: []<br/><br/>    default_endpoint = optional(object({<br/>      enabled = optional(bool, true) # (Optional) Create the default S3 Gateway VPC endpoint. Default: true<br/>    }), {})<br/><br/>    secrets_manager = optional(object({<br/>      enabled = optional(bool, false) # (Optional) Store bastion SSH keypair in AWS Secrets Manager. Default: false<br/>    }), {})<br/><br/>    acl_rules = optional(object({<br/>      public = optional(list(object({<br/>        cidr_block  = string              # (Required) Target CIDR block<br/>        from_port   = optional(number, 0) # (Optional) Start of port range. Default: 0<br/>        to_port     = optional(number, 0) # (Optional) End of port range. Default: 0<br/>        protocol    = string              # (Required) IP protocol: tcp, udp, icmp, or -1 (all)<br/>        rule_action = string              # (Required) ACL action. Values: allow, deny<br/>      })), [])                            # (Optional) Extra inbound ACL rules for public subnets (rule numbers start at 1000). Default: []<br/>      public_outbound = optional(list(object({<br/>        cidr_block  = string<br/>        from_port   = optional(number, 0)<br/>        to_port     = optional(number, 0)<br/>        protocol    = string<br/>        rule_action = string<br/>      })), []) # (Optional) Extra outbound ACL rules for public subnets (rule numbers start at 1000). Default: []<br/>      private = optional(list(object({<br/>        cidr_block  = string<br/>        from_port   = optional(number, 0)<br/>        to_port     = optional(number, 0)<br/>        protocol    = string<br/>        rule_action = string<br/>      })), []) # (Optional) Extra inbound ACL rules for private subnets (rule numbers start at 1000). Default: []<br/>    }), {})<br/>  })</pre> | n/a | yes |
+| <a name="input_vpn_accesses"></a> [vpn\_accesses](#input\_vpn\_accesses) | CIDR blocks permitted for VPN/external SSH access to the bastion and public network ACLs. Default: [] | `list(string)` | `[]` | no |
 
 ## Outputs
 
