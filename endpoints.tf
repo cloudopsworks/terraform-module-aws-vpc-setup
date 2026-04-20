@@ -38,7 +38,7 @@ locals {
       )
     }
   }
-  endpoints = merge(var.default_endpoint ? local.default_endpoints : {}, local.custom_endpoints)
+  endpoints = merge(var.vpc.default_endpoint.enabled ? local.default_endpoints : {}, local.custom_endpoints)
 }
 
 data "aws_iam_policy_document" "generic_endpoint_policy" {

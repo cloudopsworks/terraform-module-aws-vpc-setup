@@ -13,7 +13,7 @@ locals {
 resource "aws_flow_log" "flow_logs" {
   iam_role_arn    = aws_iam_role.vpc_logs.arn
   log_destination = aws_cloudwatch_log_group.log_group.arn
-  traffic_type    = var.flow_logs_type
+  traffic_type    = var.vpc.flow_logs.type
   vpc_id          = module.vpc.vpc_id
 
   tags = merge(
@@ -26,7 +26,7 @@ resource "aws_flow_log" "flow_logs" {
 
 resource "aws_cloudwatch_log_group" "log_group" {
   name              = "network/${local.flowlogs_prefix}/${var.spoke_def}/vpc-${local.system_name}"
-  retention_in_days = var.logs_retention
+  retention_in_days = var.vpc.flow_logs.retention
   tags              = local.all_tags
 }
 

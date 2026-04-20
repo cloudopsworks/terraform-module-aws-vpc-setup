@@ -22,19 +22,19 @@ locals {
   }
 }
 resource "tls_private_key" "keypair_gen_bastion" {
-  count     = var.create_bastion ? 1 : 0
+  count     = var.bastion.create ? 1 : 0
   algorithm = "RSA"
   rsa_bits  = "4096"
 }
 
 resource "local_file" "keypair_priv_bastion" {
-  count    = var.create_bastion ? 1 : 0
+  count    = var.bastion.create ? 1 : 0
   content  = tls_private_key.keypair_gen_bastion[count.index].private_key_pem
   filename = "pem-files/key-${local.system_name}-${local.region}.pem"
 }
 
 resource "aws_key_pair" "bastion_key" {
-  count      = var.create_bastion ? 1 : 0
+  count      = var.bastion.create ? 1 : 0
   key_name   = "key/bastion-${local.system_name}"
   public_key = tls_private_key.keypair_gen_bastion[count.index].public_key_openssh
   tags = merge(local.all_tags, {
@@ -44,16 +44,16 @@ resource "aws_key_pair" "bastion_key" {
 
 data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = [local.bastion_map[var.bastion_vendor].ami_owner] # Canonical
+  owners      = [local.bastion_map[var.bastion.vendor].ami_owner] # Canonical
 
   filter {
     name   = "name"
-    values = [local.bastion_map[var.bastion_vendor].ami_name]
+    values = [local.bastion_map[var.bastion.vendor].ami_name]
   }
 
   filter {
     name   = "architecture"
-    values = [strcontains(var.bastion_size, "t4g") ? "arm64" : "x86_64"]
+    values = [strcontains(var.bastion.vm_size, "t4g") ? "arm64" : "x86_64"]
   }
 }
 
@@ -69,15 +69,15 @@ data "cloudinit_config" "prometheus_server_cloudinit" {
   part {
     content_type = "text/x-shellscript"
     content = templatefile("${path.module}/files/userdata_server_dockeronly", {
-      docker_version_server = var.docker_version_server
+      docker_version_server = var.bastion.docker_version
     })
   }
 }
 
 resource "aws_instance" "bastion_server" {
-  count                  = var.create_bastion ? 1 : 0
+  count                  = var.bastion.create ? 1 : 0
   ami                    = data.aws_ami.ubuntu.id
-  instance_type          = var.bastion_size
+  instance_type          = var.bastion.vm_size
   key_name               = aws_key_pair.bastion_key[count.index].key_name
   vpc_security_group_ids = [aws_security_group.ssh_admin.id, aws_security_group.bastion.id]
   user_data_base64       = data.cloudinit_config.prometheus_server_cloudinit.rendered
@@ -86,7 +86,7 @@ resource "aws_instance" "bastion_server" {
   iam_instance_profile   = aws_iam_instance_profile.bastion.name
 
   root_block_device {
-    volume_size           = var.bastion_storage
+    volume_size           = var.bastion.disk_size
     delete_on_termination = true
     volume_type           = "gp3"
   }
@@ -111,9 +111,9 @@ resource "aws_instance" "bastion_server" {
 }
 
 resource "aws_ec2_instance_state" "bastion_server" {
-  count       = var.create_bastion ? 1 : 0
+  count       = var.bastion.create ? 1 : 0
   instance_id = aws_instance.bastion_server[count.index].id
-  state       = var.bastion_state
+  state       = var.bastion.state
 }
 
 resource "aws_iam_role" "bastion" {
@@ -153,9 +153,9 @@ resource "aws_iam_role_policy_attachment" "bastion_ssm" {
 }
 
 data "aws_iam_policy_document" "extra_bastion_permissions" {
-  count = length(try(var.bastion_extra_iam, [])) > 0 ? 1 : 0
+  count = length(try(var.bastion.extra_iam, [])) > 0 ? 1 : 0
   dynamic "statement" {
-    for_each = toset(try(var.bastion_extra_iam, []))
+    for_each = toset(try(var.bastion.extra_iam, []))
     content {
       sid       = try(statement.value.sid, null)
       effect    = try(statement.value.effect, "Allow")
@@ -182,7 +182,7 @@ data "aws_iam_policy_document" "extra_bastion_permissions" {
 }
 
 resource "aws_iam_role_policy" "extra_bastion_permissions" {
-  count  = length(try(var.bastion_extra_iam, [])) > 0 ? 1 : 0
+  count  = length(try(var.bastion.extra_iam, [])) > 0 ? 1 : 0
   policy = data.aws_iam_policy_document.extra_bastion_permissions[count.index].json
   role   = aws_iam_role.bastion.name
 }

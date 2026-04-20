@@ -1,18 +1,61 @@
 # Module configuration
-# Required variables
-{{- range .requiredVariables }}
-{{- if ne .Name "org"}}
-# Description {{ .Description }} , Type: {{ .Type }}
-{{ .Name }}: {{ .DefaultValuePlaceholder }}
-{{- end }}
+vpc:
+  cidr_block: "10.0.0.0/16"
+  availability_zones:
+    - "us-east-1a"
+    - "us-east-1b"
+  public_ip_on_launch: true
+  subnet_cidr_blocks:
+    public:
+      - "10.0.1.0/26"
+      - "10.0.1.64/26"
+    private:
+      - "10.0.8.0/21"
+      - "10.0.16.0/21"
+    database: []
+    intra: []
+  dhcp_option:
+    dns:
+      - "10.0.0.2"
+    domain:
+      name: "example.com"
+  nat_gateway:
+    enabled: true
+    single: true
+    reuse_eip: false
+  nat_instance:
+    enabled: false
+    size: "t4g.micro"
+    allowed_cidrs: []
+    spot: false
+    high_volume: false
+  flow_logs:
+    type: "REJECT"
+    retention: 30
+  vpn_gateway:
+    enabled: false
+  route_tables:
+    multiple_intra: false
+    multiple_public: false
+    intra_nat: false
+  internal_allow_cidrs: []
+  default_endpoint:
+    enabled: true
+  secrets_manager:
+    enabled: false
+  acl_rules:
+    public: []
+    public_outbound: []
+    private: []
 
-{{- end }}
-# Optional variables
-{{- range .optionalVariables }}
-{{- if ne .Name "is_hub" "spoke_def" "extra_args" }}
-# Description {{ .Description }} , Type: {{ .Type }}
-#{{ .Name }}: {{ .DefaultValue }}
-{{- end }}
+bastion:
+  create: false
+  vm_size: "t3a.micro"
+  disk_size: 10
+  state: "stopped"
+  vendor: "ubuntu"
+  docker_version: "26.0"
+  devops_accelerator: false
 
-{{- end }}
-
+vpn_accesses: []
+endpoint_services: []

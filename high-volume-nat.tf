@@ -8,12 +8,12 @@
 #
 
 data "aws_subnet" "alternat_subnet" {
-  count = length(var.private_subnets)
+  count = length(var.vpc.subnet_cidr_blocks.private)
   id    = module.vpc.private_subnets[count.index]
 }
 
 module "alternat_instances" {
-  count               = var.high_volume_nat ? 1 : 0
+  count               = var.vpc.nat_instance.high_volume ? 1 : 0
   source              = "chime/alternat/aws"
   version             = "~> 0.9"
   lambda_package_type = "Zip"
@@ -35,7 +35,7 @@ module "alternat_instances" {
   nat_instance_name_prefix              = "nat-instance-${local.system_name_short}"
   nat_instance_sg_name_prefix           = "nat-instance-${local.system_name_short}"
   nat_lambda_function_role_name         = "nat-lambda-${local.system_name_short}"
-  nat_instance_type                     = var.nat_instance_size
+  nat_instance_type                     = var.vpc.nat_instance.size
   tags                                  = local.all_tags
   vpc_az_maps = [
     for index, rt in module.vpc.private_route_table_ids : {
@@ -48,6 +48,6 @@ module "alternat_instances" {
       private_subnet_ids = [module.vpc.private_subnets[index]]
     }
   ]
-  nat_instance_eip_ids = var.reuse_nat_ips ? var.external_nat_ip_ids : []
+  nat_instance_eip_ids = var.vpc.nat_gateway.reuse_eip ? var.vpc.nat_gateway.eip_ids : []
   depends_on           = [module.vpc]
 }
