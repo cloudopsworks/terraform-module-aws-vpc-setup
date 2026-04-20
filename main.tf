@@ -9,7 +9,7 @@
 locals {
   acl_private_default = [
     { # Allow all unrestricted inbound traffic for VPC network
-      cidr_block  = var.vpc_cidr
+      cidr_block  = var.vpc.cidr_block
       from_port   = 0
       to_port     = 0
       protocol    = "-1"
@@ -51,7 +51,7 @@ locals {
   ]
   private_outbound_acl_rules_default = [
     { # Allow all unrestricted outbound traffic for VPC network
-      cidr_block  = var.vpc_cidr
+      cidr_block  = var.vpc.cidr_block
       from_port   = 0
       to_port     = 0
       protocol    = "-1"
@@ -94,10 +94,11 @@ locals {
         rule_action = "allow"
         rule_number = 450 + index(var.vpn_accesses, access)
       }
-  ])
+    ]
+  )
   acl_public_default = [
     { # Allow all from internal network Instances behind NAT will be permitted to go out
-      cidr_block  = var.vpc_cidr
+      cidr_block  = var.vpc.cidr_block
       from_port   = 0
       to_port     = 0
       protocol    = "-1"
@@ -172,7 +173,7 @@ locals {
   ]
   acl_public_outbound_default = [
     { # Allow unrestricted Outbound traffic to VPC internal addresses
-      cidr_block  = var.vpc_cidr
+      cidr_block  = var.vpc.cidr_block
       from_port   = 0
       to_port     = 0
       protocol    = "-1"
@@ -250,28 +251,28 @@ locals {
   acl_public_outbound  = local.acl_public_outbound_default
   acl_intra            = local.acl_private_default
   acl_intra_outbound   = local.private_outbound_acl_rules_default
-  use_nat_gateway      = var.enable_nat_gateway && !var.enable_nat_instance
-  use_nat_instance     = var.enable_nat_instance
+  use_nat_gateway      = var.vpc.nat_gateway.enabled && !var.vpc.nat_instance.enabled
+  use_nat_instance     = var.vpc.nat_instance.enabled
 }
 
 module "vpc" {
   source                              = "terraform-aws-modules/vpc/aws"
   version                             = "~> 6.0"
   name                                = "vpc-${local.system_name}"
-  cidr                                = var.vpc_cidr
-  azs                                 = var.availability_zones
-  private_subnets                     = var.private_subnets
-  private_subnet_names                = var.private_subnets_names
-  public_subnets                      = var.public_subnets
-  public_subnet_names                 = var.public_subnets_names
-  database_subnets                    = var.database_subnets
-  database_subnet_names               = var.database_subnets_names
-  intra_subnets                       = var.intra_subnets
+  cidr                                = var.vpc.cidr_block
+  azs                                 = var.vpc.availability_zones
+  private_subnets                     = var.vpc.subnet_cidr_blocks.private
+  private_subnet_names                = var.vpc.subnet_names.private
+  public_subnets                      = var.vpc.subnet_cidr_blocks.public
+  public_subnet_names                 = var.vpc.subnet_names.public
+  database_subnets                    = var.vpc.subnet_cidr_blocks.database
+  database_subnet_names               = var.vpc.subnet_names.database
+  intra_subnets                       = var.vpc.subnet_cidr_blocks.intra
   intra_dedicated_network_acl         = true
   intra_inbound_acl_rules             = local.acl_intra
   intra_outbound_acl_rules            = local.acl_intra_outbound
-  create_multiple_intra_route_tables  = var.multiple_intra_route_tables
-  create_multiple_public_route_tables = var.multiple_public_route_tables
+  create_multiple_intra_route_tables  = var.vpc.route_tables.multiple_intra
+  create_multiple_public_route_tables = var.vpc.route_tables.multiple_public
 
   private_dedicated_network_acl = true
   private_inbound_acl_rules     = local.acl_private
@@ -280,7 +281,7 @@ module "vpc" {
   database_dedicated_network_acl = true
   database_inbound_acl_rules = [
     { # Allow all unrestricted inbound traffic for VPC network
-      cidr_block  = var.vpc_cidr
+      cidr_block  = var.vpc.cidr_block
       from_port   = 0
       to_port     = 0
       protocol    = "-1"
@@ -300,7 +301,7 @@ module "vpc" {
   ]
   default_network_acl_ingress = [
     { # Allow all unrestricted inbound traffic for the VPC network
-      cidr_block = var.vpc_cidr
+      cidr_block = var.vpc.cidr_block
       from_port  = 0
       to_port    = 0
       protocol   = "-1"
@@ -317,36 +318,36 @@ module "vpc" {
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  enable_nat_gateway  = (length(var.public_subnets) > 0 && local.use_nat_gateway)
-  single_nat_gateway  = var.single_nat_gateway
-  reuse_nat_ips       = var.reuse_nat_ips
-  external_nat_ip_ids = var.external_nat_ip_ids
+  enable_nat_gateway  = (length(var.vpc.subnet_cidr_blocks.public) > 0 && local.use_nat_gateway)
+  single_nat_gateway  = var.vpc.nat_gateway.single
+  reuse_nat_ips       = var.vpc.nat_gateway.reuse_eip
+  external_nat_ip_ids = var.vpc.nat_gateway.eip_ids
 
   create_database_subnet_group           = true
   create_database_subnet_route_table     = true
   create_database_internet_gateway_route = false
 
   enable_dhcp_options      = true
-  dhcp_options_domain_name = var.dhcp_domain_name
-  #dhcp_options_domain_name_servers = var.dhcp_dns
+  dhcp_options_domain_name = var.vpc.dhcp_option.domain.name
+  #dhcp_options_domain_name_servers = var.vpc.dhcp_option.dns
 
-  map_public_ip_on_launch              = var.enable_public_ip_on_launch
+  map_public_ip_on_launch              = var.vpc.public_ip_on_launch
   enable_network_address_usage_metrics = true
 
-  enable_vpn_gateway = var.enable_vpn_gateway
+  enable_vpn_gateway = var.vpc.vpn_gateway.enabled
 
   tags = local.all_tags
 }
 
 resource "aws_ec2_tag" "nat_gw_eni" {
   for_each = merge([
-    for eni_index in range(var.single_nat_gateway ? 1 : length(var.public_subnets)) : {
+    for eni_index in range(var.vpc.nat_gateway.single ? 1 : length(var.vpc.subnet_cidr_blocks.public)) : {
       for k, v in local.all_tags : "${eni_index}-${k}" => {
         index     = eni_index
         tag_key   = k
         tag_value = v
       }
-    } if(length(var.public_subnets) > 0 && local.use_nat_gateway)
+    } if(length(var.vpc.subnet_cidr_blocks.public) > 0 && local.use_nat_gateway)
   ]...)
   resource_id = module.vpc.natgw_interface_ids[each.value.index]
   key         = each.value.tag_key

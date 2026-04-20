@@ -1,18 +1,101 @@
-# Module configuration
-# Required variables
-{{- range .requiredVariables }}
-{{- if ne .Name "org"}}
-# Description {{ .Description }} , Type: {{ .Type }}
-{{ .Name }}: {{ .DefaultValuePlaceholder }}
-{{- end }}
+# Module configuration — fill in values then run: terragrunt apply
 
-{{- end }}
-# Optional variables
-{{- range .optionalVariables }}
-{{- if ne .Name "is_hub" "spoke_def" "extra_args" }}
-# Description {{ .Description }} , Type: {{ .Type }}
-#{{ .Name }}: {{ .DefaultValue }}
-{{- end }}
+vpc:                                          # (Required) VPC configuration
+  cidr_block: "10.0.0.0/16"                  # (Required) CIDR block for the VPC, e.g. "10.0.0.0/16"
+  availability_zones:                         # (Required) List of AWS availability zone names
+    - "us-east-1a"
+    - "us-east-1b"
+  public_ip_on_launch: true                   # (Optional) Auto-assign public IPs in public subnets. Default: true
 
-{{- end }}
+  subnet_cidr_blocks:                         # (Optional) CIDR blocks per subnet tier. Default: all empty
+    public:                                   # (Optional) Public subnet CIDRs (one per AZ recommended). Default: []
+      - "10.0.1.0/26"
+      - "10.0.1.64/26"
+    private:                                  # (Optional) Private subnet CIDRs (one per AZ recommended). Default: []
+      - "10.0.8.0/21"
+      - "10.0.16.0/21"
+    database: []                              # (Optional) Database subnet CIDRs — also creates a DB subnet group. Default: []
+    intra: []                                 # (Optional) Intra subnet CIDRs — isolated, no internet route. Default: []
 
+  subnet_names:                               # (Optional) Friendly names per tier, positionally matched to cidr lists. Default: all empty
+    public: []                                # (Optional) Names for public subnets. Default: []
+    private: []                               # (Optional) Names for private subnets. Default: []
+    database: []                              # (Optional) Names for database subnets. Default: []
+
+  dhcp_option:                                # (Optional) DHCP options set for the VPC. Default: {}
+    dns:                                      # (Optional) DNS server IP addresses. Default: []
+      - "10.0.0.2"
+    domain:                                   # (Optional) Domain name settings. Default: {}
+      name: "example.com"                     # (Optional) Domain name suffix for DHCP. Default: "sample.com"
+
+  nat_gateway:                                # (Optional) Managed NAT gateway settings. Default: {}
+    enabled: true                             # (Optional) Create NAT gateway(s). Default: true
+    single: true                              # (Optional) One shared NAT gateway for all AZs (false = one per AZ). Default: true
+    reuse_eip: false                          # (Optional) Reuse pre-allocated Elastic IPs from a dependency. Default: false
+    eip_ids: []                               # (Optional) EIP allocation IDs to use when reuse_eip=true. Default: []
+
+  nat_instance:                               # (Optional) fck-nat instance — overrides nat_gateway when enabled. Default: {}
+    enabled: false                            # (Optional) Use NAT instance instead of NAT gateway. Default: false
+    size: "t4g.micro"                         # (Optional) EC2 instance type; arm64 types recommended. Default: "t4g.micro"
+    allowed_cidrs: []                         # (Optional) CIDRs allowed to route through the NAT instance. Default: []
+    spot: false                               # (Optional) Use a Spot instance for cost savings. Default: false
+    high_volume: false                        # (Optional) Deploy the high-throughput alternat solution. Default: false
+
+  flow_logs:                                  # (Optional) VPC Flow Logs to CloudWatch. Default: {}
+    type: "REJECT"                            # (Optional) Traffic to capture. Values: ACCEPT, REJECT, ALL. Default: "REJECT"
+    retention: 30                             # (Optional) CloudWatch log group retention in days. Default: 30
+
+  vpn_gateway:                                # (Optional) Virtual Private Gateway. Default: {}
+    enabled: false                            # (Optional) Attach a VGW to the VPC. Default: false
+
+  route_tables:                               # (Optional) Route table behaviour overrides. Default: {}
+    multiple_intra: false                     # (Optional) One route table per intra subnet instead of shared. Default: false
+    multiple_public: false                    # (Optional) One route table per public subnet instead of shared. Default: false
+    intra_nat: false                          # (Optional) Route intra subnet egress through the NAT gateway. Default: false
+
+  internal_allow_cidrs: []                    # (Optional) CIDRs granted unrestricted access via ACLs and SSH SG. Default: []
+  #  - "10.0.0.0/8"
+  #  - "172.16.0.0/12"
+
+  default_endpoint:                           # (Optional) Default S3 Gateway VPC endpoint. Default: {}
+    enabled: true                             # (Optional) Create the S3 Gateway endpoint. Default: true
+
+  secrets_manager:                            # (Optional) Secrets Manager integration for bastion SSH keys. Default: {}
+    enabled: false                            # (Optional) Store bastion keypair in Secrets Manager. Default: false
+
+  acl_rules:                                  # (Optional) Extra network ACL rules per subnet tier (rule numbers start at 1000). Default: {}
+    public: []                                # (Optional) Extra inbound ACL rules for public subnets. Default: []
+    #  - cidr_block: "203.0.113.10/32"        #   (Required) Target CIDR block
+    #    from_port: 22                         #   (Optional) Start of port range. Default: 0
+    #    to_port: 22                           #   (Optional) End of port range. Default: 0
+    #    protocol: "tcp"                       #   (Required) Values: tcp, udp, icmp, -1 (all)
+    #    rule_action: "allow"                  #   (Required) Values: allow, deny
+    public_outbound: []                       # (Optional) Extra outbound ACL rules for public subnets. Default: []
+    private: []                               # (Optional) Extra inbound ACL rules for private subnets. Default: []
+
+bastion:                                      # (Optional) Bastion host configuration. Default: {} (no bastion)
+  create: false                               # (Optional) Create a bastion EC2 host in the first public subnet. Default: false
+  vm_size: "t3a.micro"                        # (Optional) EC2 instance type. Default: "t3a.micro"
+  disk_size: 10                               # (Optional) Root EBS volume size in GB. Default: 10
+  state: "stopped"                            # (Optional) Desired instance state. Values: running, stopped. Default: "stopped"
+  vendor: "ubuntu"                            # (Optional) OS vendor for AMI. Values: ubuntu, amazon, centos, rhel. Default: "ubuntu"
+  docker_version: "26.0"                      # (Optional) Docker engine version to install via cloud-init. Default: "26.0"
+  devops_accelerator: false                   # (Optional) Publish instance metadata to SSM for DevOps Accelerator. Default: false
+  extra_iam: []                               # (Optional) Extra IAM policy statement objects for the bastion role. Default: []
+  #  - sid: "ExtraS3Access"
+  #    effect: "Allow"                        #   (Optional) Values: Allow, Deny. Default: Allow
+  #    actions:                               #   (Required) IAM action strings
+  #      - "s3:GetObject"
+  #    resources:                             #   (Required) ARN strings
+  #      - "arn:aws:s3:::my-bucket/*"
+
+vpn_accesses: []                              # (Optional) CIDRs for VPN/external SSH access to bastion and public ACLs. Default: []
+#  - "203.0.113.10/32"
+
+endpoint_services: []                         # (Optional) Additional VPC endpoint services beyond the default S3 gateway. Default: []
+#  - name: ssm
+#  - name: ssmmessages
+#  - name: ec2messages
+#  - name: dynamodb
+#    type: Gateway                            #   (Optional) Endpoint type. Values: Interface, Gateway. Default: Interface
+#    policy: true                             #   (Optional) Attach a deny-external-traffic resource policy. Default: false

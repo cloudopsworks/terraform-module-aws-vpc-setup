@@ -41,12 +41,12 @@ resource "aws_security_group_rule" "ssh-admin-ingress-vpn" {
 
 ### Internal Access
 resource "aws_security_group_rule" "ssh-admin-local" {
-  count             = length(var.internal_allow_cidrs) > 0 ? 1 : 0
+  count             = length(var.vpc.internal_allow_cidrs) > 0 ? 1 : 0
   description       = "Allow SSH Access from local network"
   from_port         = 22
   to_port           = 22
   protocol          = "tcp"
   security_group_id = aws_security_group.ssh_admin.id
-  cidr_blocks       = var.internal_allow_cidrs
+  cidr_blocks       = var.vpc.internal_allow_cidrs
   type              = "ingress"
 }

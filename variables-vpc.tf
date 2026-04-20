@@ -1,5 +1,5 @@
 ##
-# (c) 2021-2025
+# (c) 2021-2026
 #     Cloud Ops Works LLC - https://cloudops.works/
 #     Find us on:
 #       GitHub: https://github.com/cloudopsworks
@@ -7,253 +7,179 @@
 #     Distributed Under Apache v2.0 License
 #
 
-variable "vpc_cidr" {
-  description = "CIDR block for the VPC"
-  type        = string
-}
+# vpc:                                          # (Required) VPC configuration object
+#   cidr_block: "10.0.0.0/16"                  # (Required) CIDR block for the VPC
+#   availability_zones:                         # (Required) List of AWS availability zone names
+#     - "us-east-1a"
+#     - "us-east-1b"
+#   public_ip_on_launch: true                   # (Optional) Auto-assign public IPs in public subnets. Default: true
+#   subnet_cidr_blocks:                         # (Optional) CIDR blocks per subnet tier. Default: all empty
+#     public:                                   # (Optional) List of public subnet CIDRs. Default: []
+#       - "10.0.1.0/26"
+#       - "10.0.1.64/26"
+#     private:                                  # (Optional) List of private subnet CIDRs. Default: []
+#       - "10.0.8.0/21"
+#       - "10.0.16.0/21"
+#     database: []                              # (Optional) List of database subnet CIDRs. Default: []
+#     intra: []                                 # (Optional) List of intra (no-internet) subnet CIDRs. Default: []
+#   subnet_names:                               # (Optional) Friendly names per subnet tier, positional. Default: all empty
+#     public: []                                # (Optional) Names for public subnets. Default: []
+#     private: []                               # (Optional) Names for private subnets. Default: []
+#     database: []                              # (Optional) Names for database subnets. Default: []
+#   dhcp_option:                                # (Optional) DHCP options set configuration. Default: {}
+#     dns:                                      # (Optional) DNS server IP addresses. Default: []
+#       - "10.0.0.2"
+#     domain:                                   # (Optional) Domain name configuration. Default: {}
+#       name: "example.com"                     # (Optional) Domain name suffix for DHCP. Default: "sample.com"
+#   nat_gateway:                                # (Optional) Managed NAT gateway settings. Default: {}
+#     enabled: true                             # (Optional) Create NAT gateway(s). Default: true
+#     single: true                              # (Optional) Single shared NAT gateway for all AZs. Default: true
+#     reuse_eip: false                          # (Optional) Reuse pre-allocated Elastic IPs. Default: false
+#     eip_ids: []                               # (Optional) EIP allocation IDs when reuse_eip=true. Default: []
+#   nat_instance:                               # (Optional) NAT instance settings (overrides nat_gateway when enabled). Default: {}
+#     enabled: false                            # (Optional) Use NAT instance instead of gateway. Default: false
+#     size: "t4g.micro"                         # (Optional) Instance type. Values: any EC2 type, arm64 recommended. Default: "t4g.micro"
+#     allowed_cidrs: []                         # (Optional) CIDRs allowed to route through the NAT instance. Default: []
+#     spot: false                               # (Optional) Use a Spot instance for cost savings. Default: false
+#     high_volume: false                        # (Optional) Deploy high-throughput alternat solution. Default: false
+#   flow_logs:                                  # (Optional) VPC Flow Logs configuration. Default: {}
+#     type: "REJECT"                            # (Optional) Traffic to capture. Values: ACCEPT, REJECT, ALL. Default: "REJECT"
+#     retention: 30                             # (Optional) CloudWatch log group retention in days. Default: 30
+#   vpn_gateway:                                # (Optional) Virtual Private Gateway settings. Default: {}
+#     enabled: false                            # (Optional) Attach a VGW to the VPC. Default: false
+#   route_tables:                               # (Optional) Route table behaviour flags. Default: {}
+#     multiple_intra: false                     # (Optional) One route table per intra subnet. Default: false
+#     multiple_public: false                    # (Optional) One route table per public subnet. Default: false
+#     intra_nat: false                          # (Optional) Route intra subnet egress via NAT. Default: false
+#   internal_allow_cidrs: []                    # (Optional) CIDRs allowed unrestricted access via ACLs and SSH SG. Default: []
+#   default_endpoint:                           # (Optional) Default S3 Gateway endpoint. Default: {}
+#     enabled: true                             # (Optional) Create the default S3 Gateway VPC endpoint. Default: true
+#   secrets_manager:                            # (Optional) Secrets Manager integration for bastion keys. Default: {}
+#     enabled: false                            # (Optional) Store bastion SSH keys in Secrets Manager. Default: false
+#   acl_rules:                                  # (Optional) Extra network ACL rules appended per tier (rule numbers start at 1000). Default: {}
+#     public: []                                # (Optional) Extra inbound rules for public subnets. Default: []
+#     #  - cidr_block: "203.0.113.10/32"        #   cidr_block: (Required) Target CIDR
+#     #    from_port: 22                         #   from_port: (Optional) Start of port range. Default: 0
+#     #    to_port: 22                           #   to_port: (Optional) End of port range. Default: 0
+#     #    protocol: "tcp"                       #   protocol: (Required) IP protocol. Values: tcp, udp, icmp, -1 (all)
+#     #    rule_action: "allow"                  #   rule_action: (Required) Values: allow, deny
+#     public_outbound: []                       # (Optional) Extra outbound rules for public subnets. Default: []
+#     private: []                               # (Optional) Extra inbound rules for private subnets. Default: []
+variable "vpc" {
+  description = "VPC configuration. Required: cidr_block, availability_zones. All other attributes are optional with safe defaults."
+  type = object({
+    cidr_block          = string               # (Required) CIDR block for the VPC, e.g. "10.0.0.0/16"
+    availability_zones  = list(string)         # (Required) AWS AZ names, e.g. ["us-east-1a", "us-east-1b"]
+    public_ip_on_launch = optional(bool, true) # (Optional) Auto-assign public IPs in public subnets. Default: true
 
-variable "availability_zones" {
-  description = "List of availability zones for the VPC"
-  type        = list(string)
-}
+    subnet_cidr_blocks = optional(object({
+      public   = optional(list(string), []) # (Optional) Public subnet CIDRs. Default: []
+      private  = optional(list(string), []) # (Optional) Private subnet CIDRs. Default: []
+      database = optional(list(string), []) # (Optional) Database subnet CIDRs (also creates a DB subnet group). Default: []
+      intra    = optional(list(string), []) # (Optional) Intra subnet CIDRs (no internet route). Default: []
+    }), {})
 
-variable "public_subnets" {
-  description = "A list of public subnets inside the VPC"
-  type        = list(any)
-}
+    subnet_names = optional(object({
+      public   = optional(list(string), []) # (Optional) Names for public subnets, positionally matched. Default: []
+      private  = optional(list(string), []) # (Optional) Names for private subnets, positionally matched. Default: []
+      database = optional(list(string), []) # (Optional) Names for database subnets, positionally matched. Default: []
+    }), {})
 
-variable "public_subnets_names" {
-  description = "A list of public subnets names inside the VPC"
-  type        = list(string)
-  default     = []
-}
+    dhcp_option = optional(object({
+      dns = optional(list(string), []) # (Optional) DNS server IPs for the VPC DHCP options set. Default: []
+      domain = optional(object({
+        name = optional(string, "sample.com") # (Optional) Domain name suffix for DHCP options. Default: "sample.com"
+      }), {})
+    }), {})
 
-variable "private_subnets" {
-  description = "A list of private subnets inside the VPC"
-  type        = list(any)
-}
+    nat_gateway = optional(object({
+      enabled   = optional(bool, true)       # (Optional) Create NAT gateway(s). Default: true
+      single    = optional(bool, true)       # (Optional) Single NAT gateway shared across all AZs. Default: true
+      reuse_eip = optional(bool, false)      # (Optional) Reuse pre-allocated Elastic IPs. Default: false
+      eip_ids   = optional(list(string), []) # (Optional) EIP allocation IDs to reuse when reuse_eip=true. Default: []
+    }), {})
 
-variable "private_subnets_names" {
-  description = "A list of private subnets names inside the VPC"
-  type        = list(string)
-  default     = []
-}
+    nat_instance = optional(object({
+      enabled       = optional(bool, false)         # (Optional) Use fck-nat instance instead of gateway (overrides nat_gateway). Default: false
+      size          = optional(string, "t4g.micro") # (Optional) EC2 instance type. arm64 types recommended. Default: "t4g.micro"
+      allowed_cidrs = optional(list(string), [])    # (Optional) CIDRs routed through the NAT instance. Default: []
+      spot          = optional(bool, false)         # (Optional) Use a Spot instance for cost savings. Default: false
+      high_volume   = optional(bool, false)         # (Optional) Deploy the high-throughput alternat solution. Default: false
+    }), {})
 
-# variable "forward_vpc_id" {
-#   type = string
-# }
+    flow_logs = optional(object({
+      type      = optional(string, "REJECT") # (Optional) Traffic to capture. Values: ACCEPT, REJECT, ALL. Default: "REJECT"
+      retention = optional(number, 30)       # (Optional) CloudWatch log group retention in days. Default: 30
+    }), {})
 
-variable "dhcp_dns" {
-  description = "A list of DNS servers to use for DHCP options in the VPC"
-  type        = list(string)
-}
+    vpn_gateway = optional(object({
+      enabled = optional(bool, false) # (Optional) Attach a Virtual Private Gateway to the VPC. Default: false
+    }), {})
 
-variable "dhcp_domain_name" {
-  description = "The domain name to use for DHCP options in the VPC"
-  type        = string
-  default     = "sample.com"
-}
+    route_tables = optional(object({
+      multiple_intra  = optional(bool, false) # (Optional) Create one route table per intra subnet instead of sharing. Default: false
+      multiple_public = optional(bool, false) # (Optional) Create one route table per public subnet instead of sharing. Default: false
+      intra_nat       = optional(bool, false) # (Optional) Route intra subnet egress through the NAT gateway. Default: false
+    }), {})
 
-variable "database_subnets" {
-  description = "A list of database subnets inside the VPC"
-  type        = list(string)
-}
+    internal_allow_cidrs = optional(list(string), []) # (Optional) CIDRs granted unrestricted access via network ACLs and SSH security group. Default: []
 
-variable "database_subnets_names" {
-  description = "A list of database subnets names inside the VPC"
-  type        = list(string)
-  default     = []
-}
+    default_endpoint = optional(object({
+      enabled = optional(bool, true) # (Optional) Create the default S3 Gateway VPC endpoint. Default: true
+    }), {})
 
-variable "intra_subnets" {
-  description = "A list of intra subnets inside the VPC"
-  type        = list(string)
-  default     = []
-}
+    secrets_manager = optional(object({
+      enabled = optional(bool, false) # (Optional) Store bastion SSH keypair in AWS Secrets Manager. Default: false
+    }), {})
 
-variable "multiple_intra_route_tables" {
-  description = "Flag to create multiple intra route tables, if true, it will create a route table for each intra subnet"
-  type        = bool
-  default     = false
-}
+    acl_rules = optional(object({
+      public = optional(list(object({
+        cidr_block  = string              # (Required) Target CIDR block
+        from_port   = optional(number, 0) # (Optional) Start of port range. Default: 0
+        to_port     = optional(number, 0) # (Optional) End of port range. Default: 0
+        protocol    = string              # (Required) IP protocol: tcp, udp, icmp, or -1 (all)
+        rule_action = string              # (Required) ACL action. Values: allow, deny
+      })), [])                            # (Optional) Extra inbound ACL rules for public subnets (rule numbers start at 1000). Default: []
+      public_outbound = optional(list(object({
+        cidr_block  = string
+        from_port   = optional(number, 0)
+        to_port     = optional(number, 0)
+        protocol    = string
+        rule_action = string
+      })), []) # (Optional) Extra outbound ACL rules for public subnets (rule numbers start at 1000). Default: []
+      private = optional(list(object({
+        cidr_block  = string
+        from_port   = optional(number, 0)
+        to_port     = optional(number, 0)
+        protocol    = string
+        rule_action = string
+      })), []) # (Optional) Extra inbound ACL rules for private subnets (rule numbers start at 1000). Default: []
+    }), {})
+  })
 
-variable "multiple_public_route_tables" {
-  description = "Flag to create multiple public route tables, if true, it will create a route table for each public subnet"
-  type        = bool
-  default     = false
-}
-
-variable "create_bastion" {
-  description = "Flag to create a bastion host in the VPC"
-  type        = bool
-}
-
-# variable "forward_route_cidrs" {
-#   type = list(string)
-# }
-
-variable "vpn_accesses" {
-  description = "List of CIDR blocks for VPN access, external access, or other network access"
-  type        = list(string)
-  default     = []
-}
-
-variable "docker_version_server" {
-  description = "Docker version to use for the server, at bastion host"
-  type        = string
-  default     = "26.0"
-}
-
-variable "extra_tags" {
-  description = "Additional tags to apply to the VPC and its resources"
-  type        = map(string)
-  default     = {}
-}
-
-variable "flow_logs_type" {
-  description = "Type of flow logs to create. Options are ACCEPT, REJECT, or ALL. Default is REJECT."
-  type        = string
-  default     = "REJECT"
   validation {
-    condition     = contains(["ACCEPT", "REJECT", "ALL"], var.flow_logs_type)
-    error_message = "Invalid value for flow_logs_type. Must be one of ACCEPT, REJECT, or ALL"
+    condition     = contains(["ACCEPT", "REJECT", "ALL"], try(var.vpc.flow_logs.type, "REJECT"))
+    error_message = "vpc.flow_logs.type must be one of ACCEPT, REJECT, or ALL."
   }
 }
 
-variable "single_nat_gateway" {
-  description = "Flag to create a single NAT gateway for the VPC. If true, only one NAT gateway will be created, otherwise one per public subnet."
-  type        = bool
-  default     = true
-}
-
-variable "intra_route_nat_gateway" {
-  description = "Flag to use NAT gateway for intra route tables. If true, the NAT gateway will be used for intra route tables."
-  type        = bool
-  default     = false
-}
-
-variable "enable_nat_gateway" {
-  description = "Flag to enable NAT gateway creation. If true, a NAT gateway will be created in the VPC."
-  type        = bool
-  default     = true
-}
-
-variable "enable_nat_instance" {
-  description = "Flag to enable NAT instance creation. If true, a NAT instance will be created in the VPC. and will override enable_nat_gateway."
-  type        = bool
-  default     = false
-}
-
-variable "high_volume_nat" {
-  description = "Flag to create a high volume NAT instance. If true, a high volume NAT instance will be created instead of a standard NAT instance."
-  type        = bool
-  default     = false
-}
-
-variable "nat_instance_size" {
-  description = "Instance type for the NAT instance. This is used when enable_nat_instance is true."
-  type        = string
-  default     = "t4g.micro"
-}
-
-variable "nat_instance_allowed_cidrs" {
-  description = "List of CIDR blocks that are allowed to access the NAT instance. This is used to restrict access to the NAT instance."
+# vpn_accesses:        # (Optional) CIDR blocks for VPN/external SSH access to bastion and public ACLs. Default: []
+# #  - "203.0.113.10/32"
+variable "vpn_accesses" {
+  description = "CIDR blocks permitted for VPN/external SSH access to the bastion and public network ACLs. Default: []"
   type        = list(string)
   default     = []
 }
 
-variable "nat_instance_spot" {
-  description = "Flag to use a spot instance for the NAT instance. If true, a spot instance will be used instead of an on-demand instance."
-  type        = bool
-  default     = false
-}
-
-variable "reuse_nat_ips" {
-  description = "Flag to reuse existing NAT IPs. If true, it will use existing NAT IPs instead of creating new ones."
-  type        = bool
-  default     = false
-}
-
-variable "external_nat_ip_ids" {
-  description = "List of external NAT IP IDs to use if reuse_nat_ips is true. This is used to specify existing NAT IPs to reuse."
-  type        = list(string)
-  default     = []
-}
-
-variable "private_acl_rules" {
-  description = "List of inbound rules for the private network ACL"
-  type = list(object({
-    cidr_block  = string,
-    from_port   = optional(number, 0),
-    to_port     = optional(number, 0),
-    protocol    = string,
-    rule_action = string,
-  }))
-  default = []
-}
-
-variable "public_outbound_rules" {
-  description = "List of outbound rules for the public network ACL"
-  type = list(object({
-    cidr_block  = string,
-    from_port   = optional(number, 0),
-    to_port     = optional(number, 0),
-    protocol    = string,
-    rule_action = string,
-  }))
-  default = []
-}
-
-variable "public_acl_rules" {
-  description = "List of inbound rules for the public network ACL"
-  type = list(object({
-    cidr_block  = string,
-    from_port   = optional(number, 0),
-    to_port     = optional(number, 0),
-    protocol    = string,
-    rule_action = string,
-  }))
-  default = []
-}
-
-variable "internal_allow_cidrs" {
-  description = "List of CIDR blocks to allow internal traffic within the VPC. This is used to define which CIDRs can communicate with each other."
-  type        = list(string)
-  default     = []
-}
-
+# endpoint_services:   # (Optional) Additional VPC endpoint services beyond the default S3 gateway. Default: []
+# #  - name: ssm
+# #  - name: ssmmessages
+# #  - name: ec2messages
+# #  - name: dynamodb
+# #    type: Gateway    # (Optional) Endpoint type. Values: Interface, Gateway. Default: Interface
+# #    policy: true     # (Optional) Attach a deny-external-traffic policy. Default: false
 variable "endpoint_services" {
-  description = "List of endpoint services to create in the VPC. This is used to define which AWS services will have endpoints in the VPC."
+  description = "Additional VPC endpoint services to create beyond the default S3 gateway endpoint. Default: []"
   type        = any
   default     = []
-}
-
-variable "default_endpoint" {
-  description = "Default endpoint for the VPC. This is used to specify the default endpoint for the VPC."
-  type        = bool
-  default     = true
-}
-
-variable "secrets_manager_enabled" {
-  description = "Flag to enable AWS Secrets Manager for the VPC. If true, AWS Secrets Manager will be enabled for the VPC."
-  type        = bool
-  default     = false
-}
-
-variable "logs_retention" {
-  description = "CloudWatch Logs retention in days"
-  type        = number
-  default     = 30
-}
-
-variable "enable_vpn_gateway" {
-  description = "Flag to enable VPN gateway creation. If true, a VPN gateway will be created in the VPC."
-  type        = bool
-  default     = false
-}
-
-variable "enable_public_ip_on_launch" {
-  description = "Flag to enable public IPs for instances launched in the public subnets. If true, instances launched in the public subnets will receive a public IP, defaults to true."
-  type        = bool
-  default     = true
 }
