@@ -23,7 +23,24 @@ locals {
 include "root" {
   path = find_in_parent_folders("{{ .RootFileName }}")
 }
-
+{{ if .nat_eip_enabled }}
+dependency "eip" {
+  config_path                             = "{{ .nat_eip_path }}"
+  mock_outputs_allowed_terraform_commands = ["validate"]
+  mock_outputs = {
+    public_ips = [
+      "123.123.123.1",
+      "123.123.123.2",
+      "123.123.123.3",
+    ]
+    public_ip_ids = [
+      "eipalloc-12345678901234567",
+      "eipalloc-12345678901234567",
+      "eipalloc-12345678901234567",
+    ]
+  }
+}
+{{ end }}
 terraform {
   source = "{{ .sourceUrl }}"
 }
@@ -34,7 +51,19 @@ inputs = {
   spoke_def  = local.spoke_vars.spoke
   {{- range .requiredVariables }}
   {{- if ne .Name "org" }}
-  {{ .Name }} = local.local_vars.{{ .Name }}
+  {{- if and $.nat_eip_enabled (eq .Name "vpc") }}
+  vpc = merge(local.local_vars.vpc, {
+      nat_gateway = {
+        enabled = try(local.local_vars.vpc.nat_gateway.enabled, true)
+        single  = try(local.local_vars.vpc.nat_gateway.single, true)
+        reuse_eip = true
+        eip_ids = dependency.eip.outputs.public_ip_ids
+      }
+    }
+  )
+  {{- else }}
+  {{ .Name }} =
+  {{- end }}
   {{- end }}
   {{- end }}
   {{- range .optionalVariables }}

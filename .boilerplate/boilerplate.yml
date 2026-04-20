@@ -20,6 +20,16 @@ variables:
     type: map
     default: {}
   # End - Generic Boilerplate Variables Setup
+  - name: nat_eip_enabled
+    order: 2
+    description: "NAT EIP Dependency Enabled"
+    type: bool
+    default: false
+  - name: nat_eip_path
+    order: 3
+    description: "NAT EIP Dependency Path"
+    type: string
+    default: "../nat-eip"
 
 hooks:
   after:
