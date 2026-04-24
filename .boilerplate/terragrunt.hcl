@@ -62,7 +62,7 @@ inputs = {
     }
   )
   {{- else }}
-  {{ .Name }} =
+  {{ .Name }} = local.local_vars.vpc
   {{- end }}
   {{- end }}
   {{- end }}
