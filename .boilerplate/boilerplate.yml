@@ -14,22 +14,26 @@ variables:
     description: "Is this a hub configuration?"
     type: bool
     default: false
+    confirm: true
   - name: tags
     order: 1
     description: "Tags"
     type: map
     default: {}
+    confirm: true
   # End - Generic Boilerplate Variables Setup
   - name: nat_eip_enabled
     order: 2
     description: "NAT EIP Dependency Enabled"
     type: bool
     default: false
+    confirm: true
   - name: nat_eip_path
     order: 3
     description: "NAT EIP Dependency Path"
     type: string
     default: "../nat-eip"
+    confirm: true
 
 hooks:
   after:
