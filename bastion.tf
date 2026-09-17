@@ -1,5 +1,5 @@
 ##
-# (c) 2021-2025
+# (c) 2021-2026
 #     Cloud Ops Works LLC - https://cloudops.works/
 #     Find us on:
 #       GitHub: https://github.com/cloudopsworks
@@ -89,6 +89,15 @@ resource "aws_instance" "bastion_server" {
     volume_size           = var.bastion.disk_size
     delete_on_termination = true
     volume_type           = "gp3"
+  }
+
+  # Enforce IMDSv2: session tokens required, IMDSv1 disabled.
+  # Hop limit 2 keeps IMDS reachable from Docker containers running on the bastion.
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 2
+    instance_metadata_tags      = "disabled"
   }
 
   lifecycle {
