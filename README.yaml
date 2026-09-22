@@ -84,7 +84,7 @@ usage: |-
     availability_zones:                         # (Required) List of AWS availability zone names
       - "us-east-1a"
       - "us-east-1b"
-    public_ip_on_launch: true                   # (Optional) Auto-assign public IPs in public subnets. Default: true
+    public_ip_on_launch: false                  # (Optional) Auto-assign public IPs in public subnets. Default: false
 
     subnet_cidr_blocks:                         # (Optional) CIDR blocks per subnet tier. Default: all empty
       public:                                   # (Optional) Public subnet CIDRs (one per AZ recommended). Default: []

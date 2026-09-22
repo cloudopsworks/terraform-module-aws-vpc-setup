@@ -12,7 +12,7 @@
 #   availability_zones:                         # (Required) List of AWS availability zone names
 #     - "us-east-1a"
 #     - "us-east-1b"
-#   public_ip_on_launch: true                   # (Optional) Auto-assign public IPs in public subnets. Default: true
+#   public_ip_on_launch: false                  # (Optional) Auto-assign public IPs in public subnets. Default: false
 #   subnet_cidr_blocks:                         # (Optional) CIDR blocks per subnet tier. Default: all empty
 #     public:                                   # (Optional) List of public subnet CIDRs. Default: []
 #       - "10.0.1.0/26"
@@ -68,9 +68,9 @@
 variable "vpc" {
   description = "VPC configuration. Required: cidr_block, availability_zones. All other attributes are optional with safe defaults."
   type = object({
-    cidr_block          = string               # (Required) CIDR block for the VPC, e.g. "10.0.0.0/16"
-    availability_zones  = list(string)         # (Required) AWS AZ names, e.g. ["us-east-1a", "us-east-1b"]
-    public_ip_on_launch = optional(bool, true) # (Optional) Auto-assign public IPs in public subnets. Default: true
+    cidr_block          = string                # (Required) CIDR block for the VPC, e.g. "10.0.0.0/16"
+    availability_zones  = list(string)          # (Required) AWS AZ names, e.g. ["us-east-1a", "us-east-1b"]
+    public_ip_on_launch = optional(bool, false) # (Optional) Auto-assign public IPs in public subnets. Default: false per compliance best practices
 
     subnet_cidr_blocks = optional(object({
       public   = optional(list(string), []) # (Optional) Public subnet CIDRs. Default: []
